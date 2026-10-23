@@ -1,0 +1,660 @@
+<!doctype html><html lang="en" data-view="futarchy"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Futarchy · Seer, Electric Foundation redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+</head><body style="margin:0">
+<style>
+/* Layout: one header with a product switcher over six routed views; cards sit on the page, rows nest inside cards (EF kit's three surfaces). */
+:root{
+  /* EF kit — dark (default) */
+  --page:#101013; --card:#1A1A1E; --nest:#1F1F24; --nest-2:#26262C;
+  --text:#EDEDF2; --text-2:#A8A8B3; --muted:#67676F;
+  --primary:#7638FA; --primary-hi:#8A55FF; --on-primary:#FFFFFF;
+  --sec:#241E33; --sec-text:#9C6FF2;
+  --line:rgba(237,237,242,.07);
+  --good:#3BC98A; --warn:#E8A93B; --bad:#EF5350;
+  --good-bg:rgba(59,201,138,.12); --warn-bg:rgba(232,169,59,.13); --bad-bg:rgba(239,83,80,.13);
+  --shadow:0 12px 40px rgba(0,0,0,.45);
+  --f-display:"Inter Tight","Inter",system-ui,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){
+  --page:#F7F7F9; --card:#FFFFFF; --nest:#F1F1F4; --nest-2:#E8E8EC;
+  --text:#17171C; --text-2:#5C5C66; --muted:#8E8E99;
+  --sec:#EFE9FC; --sec-text:#6C2BD9; --line:rgba(23,23,28,.08);
+  --good:#178A57; --warn:#B26B00; --bad:#D23431;
+  --good-bg:rgba(23,138,87,.10); --warn-bg:rgba(178,107,0,.10); --bad-bg:rgba(210,52,49,.09);
+  --shadow:0 12px 40px rgba(23,23,28,.12); color-scheme:light}}
+:root[data-theme="light"]{
+  --page:#F7F7F9; --card:#FFFFFF; --nest:#F1F1F4; --nest-2:#E8E8EC;
+  --text:#17171C; --text-2:#5C5C66; --muted:#8E8E99;
+  --sec:#EFE9FC; --sec-text:#6C2BD9; --line:rgba(23,23,28,.08);
+  --good:#178A57; --warn:#B26B00; --bad:#D23431;
+  --good-bg:rgba(23,138,87,.10); --warn-bg:rgba(178,107,0,.10); --bad-bg:rgba(210,52,49,.09);
+  --shadow:0 12px 40px rgba(23,23,28,.12); color-scheme:light}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{overflow-x:clip}
+body{background:var(--page);color:var(--text);font:14px/1.5 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--page)}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.wrap{max-width:1240px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* header */
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--page) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.hdr-top{display:flex;align-items:center;gap:16px;padding-block:14px}
+.logo{display:flex;align-items:center;gap:7px;text-decoration:none;font:700 23px/1 var(--f-display);letter-spacing:-.03em}
+.logo svg{width:24px;height:24px;flex:none}
+.search{flex:1;max-width:340px;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:999px;background:var(--card);color:var(--muted)}
+.search input{flex:1;min-width:0;border:0;background:none;outline:none;color:var(--text);font:inherit}
+.hdr-sp{flex:1}
+.pill-btn{height:40px;padding:0 16px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;font-weight:500}
+.btn-primary{background:var(--primary);color:var(--on-primary)}
+.btn-primary:hover{background:var(--primary-hi)}
+.btn-sec{background:var(--sec);color:var(--sec-text)}
+.btn-ghost{background:var(--card);color:var(--text)}
+.icon-btn{width:40px;height:40px;border-radius:999px;display:grid;place-items:center;background:var(--card);color:var(--text-2)}
+.lenses{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px}
+.lenses::-webkit-scrollbar{display:none}
+.lens{flex:none;display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:8px;color:var(--text-2);font-weight:500;text-decoration:none;white-space:nowrap}
+.lens:hover{color:var(--text);background:var(--card)}
+.lens[aria-current="page"]{background:var(--primary);color:var(--on-primary)}
+.lens .dot{width:7px;height:7px;border-radius:2px;background:currentColor;opacity:.7}
+.lens .sep{width:1px;height:18px;background:var(--line);margin:0 6px}
+@media (max-width:760px){.search{display:none}.hdr-top .hide-sm{display:none}}
+
+/* generic */
+main{padding-block:24px 64px}
+.view{display:grid;gap:24px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--sec-text)}
+h1,h2,h3{font-family:var(--f-display);letter-spacing:-.025em;text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,5vw,56px);line-height:1.04;font-weight:700}
+h2{font-size:clamp(22px,2.6vw,28px);line-height:1.15;font-weight:700}
+h3{font-size:16px;line-height:1.3;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+.lead{font-size:16px;color:var(--text-2);max-width:62ch}
+.sub{color:var(--text-2)}
+.small{font-size:12px;color:var(--muted)}
+.card{background:var(--card);border-radius:12px;padding:12px;display:grid;gap:8px;min-width:0}
+.card-pad{padding:20px}
+.row{background:var(--nest);border-radius:8px;min-height:44px;padding:0 12px;display:flex;align-items:center;gap:10px;min-width:0}
+.row .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip{height:28px;padding:0 12px;border-radius:6px;font-size:12px;font-weight:500;display:inline-flex;align-items:center}
+.chip-yes{background:var(--primary);color:var(--on-primary)}
+.chip-no{background:var(--sec);color:var(--sec-text)}
+.big-btn{height:44px;border-radius:8px;font-weight:500;flex:1;display:flex;align-items:center;justify-content:center}
+.foot{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);padding:2px 2px 0}
+.foot .sp{flex:1}
+.bullet::before{content:"•";margin-right:8px}
+.tag{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:11.5px;font-weight:600;background:var(--sec);color:var(--sec-text);white-space:nowrap}
+.tag.good{background:var(--good-bg);color:var(--good)}.tag.warn{background:var(--warn-bg);color:var(--warn)}.tag.bad{background:var(--bad-bg);color:var(--bad)}
+.tag.plain{background:var(--nest);color:var(--text-2)}
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+@media (max-width:420px){.g2,.g3{grid-template-columns:1fr}}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:960px){.split{grid-template-columns:1fr}}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{height:34px;padding:0 14px;border-radius:8px;color:var(--text-2);font-weight:500}
+.tab[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.tab:not([aria-pressed="true"]):hover{background:var(--card);color:var(--text)}
+.bar{height:6px;border-radius:3px;background:var(--nest-2);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--primary);border-radius:3px}
+.tbl-wrap{overflow-x:auto;border-radius:12px;background:var(--card)}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th{font-size:12px;font-weight:500;color:var(--muted);text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--nest)}
+.r{text-align:right}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pagehead .titles{display:grid;gap:8px;min-width:0;flex:1 1 280px;max-width:820px}
+.statline{display:flex;gap:24px;flex-wrap:wrap}
+.stat{display:grid;gap:2px}
+.stat b{font:600 20px/1.2 var(--f-display);letter-spacing:-.02em}
+.stat span{font-size:12px;color:var(--muted)}
+.note{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:10px;background:var(--sec);color:var(--sec-text);font-size:13px}
+.note svg{flex:none;margin-top:2px}
+.demo-flag{font-size:11.5px;color:var(--muted)}
+
+/* home */
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:40px;align-items:center;padding-block:28px 8px}
+@media (max-width:960px){.hero{grid-template-columns:1fr}}
+.hero-copy{display:grid;gap:20px}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+.stack{display:grid;gap:8px}
+.stack-apps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.stack-apps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.app-tile{background:var(--card);border-radius:10px;padding:12px;display:grid;gap:6px;text-decoration:none;min-height:118px;align-content:start;border:1px solid transparent;transition:border-color .15s,transform .15s}
+.app-tile:hover{border-color:var(--primary);transform:translateY(-2px)}
+.app-tile b{font:600 14px/1.2 var(--f-display)}
+.app-tile span{font-size:11.5px;color:var(--text-2);line-height:1.35}
+.app-tile svg{color:var(--sec-text)}
+.layer{border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.layer.proto{background:var(--primary);color:var(--on-primary)}
+.layer.proto .parts{display:flex;gap:6px;flex-wrap:wrap}
+.layer.proto .parts span{background:rgba(255,255,255,.16);border-radius:6px;padding:3px 8px;font-size:12px}
+.layer.chain{background:var(--nest);color:var(--text-2);font-size:12px;justify-content:space-between}
+.conn{height:14px;display:grid;grid-template-columns:repeat(5,1fr)}
+.conn i{justify-self:center;width:1px;background:var(--primary);opacity:.6}
+@media (max-width:560px){.conn{display:none}}
+.shape-card{display:grid;gap:14px;padding:20px;align-content:start}
+.shape-card .tag,.shape-card a,.shape-card button{justify-self:start}
+#v-home .g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr))}
+.shape-card .q{font:600 17px/1.3 var(--f-display);letter-spacing:-.015em}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:760px){.steps{grid-template-columns:1fr}}
+.step{display:grid;gap:8px;padding:20px}
+.step .n{width:28px;height:28px;border-radius:8px;background:var(--sec);color:var(--sec-text);display:grid;place-items:center;font-weight:600;font-size:13px}
+
+/* explorer */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.seg{display:flex;background:var(--card);border-radius:10px;padding:3px;gap:2px}
+.seg button{height:32px;padding:0 12px;border-radius:8px;color:var(--text-2);font-weight:500;font-size:13px}
+.seg button[aria-pressed="true"]{background:var(--nest-2);color:var(--text)}
+.mkt-title{display:flex;align-items:center;gap:10px;min-height:44px}
+.mkt-ico{width:44px;height:44px;border-radius:8px;flex:none;display:grid;place-items:center;font:700 15px var(--f-display);color:#fff}
+.mkt-title p{font-weight:500;line-height:1.3}
+.scalar{display:grid;gap:8px;padding:10px 12px;background:var(--nest);border-radius:8px}
+.scalar-track{position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--sec),var(--primary))}
+.scalar-track i{position:absolute;top:-5px;width:4px;height:18px;border-radius:2px;background:var(--text);transform:translateX(-50%)}
+.scalar-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.feed{display:grid}
+.feed-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line);font-size:13px}
+.feed-row:last-child{border-bottom:0}
+.side{position:sticky;top:120px;display:grid;gap:16px}
+
+/* deep */
+.deep-row{display:grid;grid-template-columns:34px minmax(0,1fr) 120px 70px 64px;gap:12px;align-items:center;padding:10px 12px;background:var(--nest);border-radius:8px}
+@media (max-width:640px){.deep-row{grid-template-columns:28px minmax(0,1fr) 60px}.deep-row .hide-sm{display:none}}
+.rank{font:600 13px var(--f-mono);color:var(--muted)}
+.deep-row .ttl{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.deep-row .who{font-size:12px;color:var(--muted)}
+.agents{display:grid;gap:8px}
+.agent{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center}
+.av{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font:600 11px var(--f-mono);background:var(--sec);color:var(--sec-text)}
+
+/* futarchy */
+.cond{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cond .side-box{background:var(--nest);border-radius:10px;padding:14px;display:grid;gap:6px}
+.cond .side-box b{font:600 26px/1.1 var(--f-display);letter-spacing:-.02em}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--text-2);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font:11px var(--f-body)}
+.prop-list{display:grid;gap:8px}
+.brief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--card);border-radius:12px}
+.brief>div{padding:14px 18px;display:grid;gap:4px;align-content:start}
+.brief>div+div{border-left:1px solid var(--line)}
+.brief span{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.brief p{color:var(--text)}
+@media (max-width:760px){.brief{grid-template-columns:1fr}.brief>div+div{border-left:0;border-top:1px solid var(--line)}}
+.eyerow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.export{margin:0;background:var(--nest);border-radius:8px;padding:14px;overflow:auto;max-height:320px;font:12px/1.55 var(--f-mono);color:var(--text-2)}
+.tok-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:6px}
+.oracle{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted)}
+.oracle i{width:6px;height:6px;border-radius:50%;background:var(--good)}
+
+/* opportunity */
+.opp{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.opp .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.seats{display:flex;gap:4px}
+.seats i{width:18px;height:6px;border-radius:3px;background:var(--nest-2)}
+.seats i.on{background:var(--primary)}
+
+/* risk */
+.risk-scale{display:flex;height:10px;border-radius:5px;overflow:hidden}
+.risk-scale i{flex:1}
+.pd{font:600 15px var(--f-display);letter-spacing:-.01em}
+.spark{width:96px;height:28px;display:block}
+.cmp-bars{display:grid;gap:14px}
+.cmp-item{display:grid;gap:6px}
+.cmp-item .top{display:flex;justify-content:space-between;gap:8px}
+.cmp-track{position:relative;height:14px;border-radius:7px;background:var(--nest-2)}
+.cmp-track i{position:absolute;inset:0 auto 0 0;border-radius:7px}
+.check{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--muted);display:inline-grid;place-items:center;vertical-align:middle}
+.check.on{background:var(--primary);border-color:var(--primary)}
+.check.on::after{content:"";width:8px;height:4px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
+
+/* trade sheet */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;display:grid;place-items:center;padding:16px}
+.sheet{width:min(420px,100%);background:var(--card);border-radius:16px;padding:20px;display:grid;gap:14px;box-shadow:var(--shadow)}
+.amount{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.amount input{width:60%;text-align:right;background:none;border:0;color:var(--text);font:700 34px/1 var(--f-display);letter-spacing:-.02em;outline:none}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.quick button{height:40px;border-radius:8px;background:var(--nest);color:var(--text-2);font-weight:600}
+.quick button:hover{color:var(--text)}
+.sheet-actions{display:flex;gap:8px}
+.sheet-actions .x{width:44px;height:44px;border-radius:8px;background:var(--sec);color:var(--sec-text);display:grid;place-items:center}
+.outcome-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.outcome-pick button{border-radius:10px;padding:10px 12px;text-align:left;background:var(--sec);color:var(--sec-text);display:grid;gap:2px}
+.outcome-pick button small{font-size:11px;opacity:.85}
+.outcome-pick button b{font:600 20px var(--f-display)}
+.outcome-pick button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--text);color:var(--page);padding:10px 16px;border-radius:10px;font-weight:500;z-index:90;box-shadow:var(--shadow)}
+.sitefoot{border-top:1px solid var(--line);padding-block:24px;color:var(--muted);font-size:12px;display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-app" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></symbol>
+    <symbol id="i-deep" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 6h16M4 10h12M4 14h9M4 18h5"/></symbol>
+    <symbol id="i-fut" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 20v-7M12 13 6 6M12 13l6-7M4 6h4M16 6h4"/></symbol>
+    <symbol id="i-opp" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></symbol>
+    <symbol id="i-risk" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M4 17a8 8 0 0 1 16 0M12 17l4-5"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 11l8-6 8 6v8h-5v-5H9v5H4z"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 11v5M12 8v.01"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M16 16l4 4"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/><path stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13"/></symbol>
+    <symbol id="i-mark" viewBox="0 0 24 24"><path fill="currentColor" d="M6 3h12v18l-6-4-6 4z"/></symbol>
+    <symbol id="i-logo" viewBox="0 0 24 24"><path fill="currentColor" d="M9.5 2 3 13h6.2L6.8 22 21 9.5h-6.6L17.4 2z"/></symbol>
+  </defs>
+</svg>
+
+<header class="hdr">
+  <div class="wrap">
+    <div class="hdr-top">
+      <a class="logo" href="#home" aria-label="Seer home"><svg><use href="#i-logo"/></svg>seer</a>
+      <label class="search" for="q"><svg width="18" height="18"><use href="#i-search"/></svg><input id="q" placeholder="Search markets, addresses, questions…"></label>
+      <div class="hdr-sp"></div>
+      <button class="icon-btn" id="themeBtn" aria-label="Switch light or dark mode" title="Switch theme"><svg width="18" height="18"><use href="#i-sun"/></svg></button>
+      <button class="pill-btn btn-ghost hide-sm" data-toast="Wallet connection is disabled in this demo">Connect</button>
+      <button class="pill-btn btn-primary" data-toast="Market creation opens in the Seer app">Create market</button>
+    </div>
+    <nav class="lenses" aria-label="Seer applications">
+      <a class="lens" data-v="home" href="index.html"><svg width="16" height="16"><use href="#i-home"/></svg>Seer</a>
+      <span class="lens" aria-hidden="true" style="padding:0"><span class="sep"></span></span>
+      <a class="lens" data-v="app" href="app.html"><svg width="16" height="16"><use href="#i-app"/></svg>Seer app</a>
+      <a class="lens" data-v="deep" href="deep.html"><svg width="16" height="16"><use href="#i-deep"/></svg>Deep</a>
+      <a class="lens" data-v="futarchy" href="futarchy.html"><svg width="16" height="16"><use href="#i-fut"/></svg>Futarchy</a>
+      <a class="lens" data-v="opportunity" href="opportunity.html"><svg width="16" height="16"><use href="#i-opp"/></svg>Opportunity Markets</a>
+      <a class="lens" data-v="risk" href="risk.html"><svg width="16" height="16"><use href="#i-risk"/></svg>Risk Pricing</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<style>
+.src{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:11.5px;font-weight:500;background:var(--nest);color:var(--text-2);white-space:nowrap}
+.src i{width:6px;height:6px;border-radius:50%;background:var(--good)}
+.src.stale i{background:var(--warn)}
+.warnbar{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:10px;background:var(--warn-bg);color:var(--warn);font-size:13px}
+.warnbar svg{flex:none;margin-top:2px}
+.addr{font:12px var(--f-mono);color:var(--muted)}
+.mkt-ico{font-size:13px}
+.st-tag{margin-left:auto}
+.receipt{display:grid;gap:8px}
+.receipt .row b{min-width:52px;text-align:right}
+.won{outline:1.5px solid var(--good);outline-offset:-1.5px}
+.repo a{text-decoration:none}
+.repo a:hover{text-decoration:underline}
+.pdbar{width:110px;height:6px;border-radius:3px;background:var(--nest-2);overflow:hidden}
+.pdbar i{display:block;height:100%;border-radius:3px}
+.flag{font-size:11.5px;color:var(--warn)}
+.sources{display:grid;gap:4px;font:11.5px/1.5 var(--f-mono);color:var(--muted);overflow-wrap:anywhere}
+</style>
+
+<!-- ============ HOME ============ -->
+<section class="view" id="v-home" data-view="home">
+  <div class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">The Seer protocol</span>
+      <h1>Every question has a shape. Seer has a market for each one.</h1>
+      <p class="lead">Seer is an open protocol for prediction markets. Outcomes are ERC-20 tokens, answers come from Reality.eth, and disputes go to Kleros Court. Five apps sit on top of it, each built for a different kind of question.</p>
+      <div class="hero-actions">
+        <a class="pill-btn btn-primary" href="#app" style="text-decoration:none">Explore markets</a>
+        <a class="pill-btn btn-sec" href="#how" style="text-decoration:none">How a market resolves</a>
+      </div>
+      <div class="statline">
+        <div class="stat"><b class="num">33</b><span>DeFi assets priced for default</span></div>
+        <div class="stat"><b class="num">98</b><span>Repos in Deep Round 3</span></div>
+        <div class="stat"><b class="num">234</b><span>Names in one opportunity market</span></div>
+      </div>
+      <span class="src"><i></i>Figures from Seer's APIs · 23 Oct 2026, 07:56 UTC</span>
+    </div>
+    <div class="stack" aria-label="How the apps sit on the protocol">
+      <div class="stack-apps">
+        <a class="app-tile" href="#app"><svg width="20" height="20"><use href="#i-app"/></svg><b>Seer app</b><span>Find and trade any market</span></a>
+        <a class="app-tile" href="#deep"><svg width="20" height="20"><use href="#i-deep"/></svg><b>Deep</b><span>Hundreds of outcomes, agents welcome</span></a>
+        <a class="app-tile" href="#futarchy"><svg width="20" height="20"><use href="#i-fut"/></svg><b>Futarchy</b><span>If it passes vs. if it fails</span></a>
+        <a class="app-tile" href="#opportunity"><svg width="20" height="20"><use href="#i-opp"/></svg><b>Opportunity</b><span>Which entries get picked</span></a>
+        <a class="app-tile" href="#risk"><svg width="20" height="20"><use href="#i-risk"/></svg><b>Risk Pricing</b><span>Default odds across DeFi</span></a>
+      </div>
+      <div class="conn" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="layer proto"><b style="font-family:var(--f-display)">Seer protocol</b><div class="parts"><span>Conditional Tokens</span><span>Reality.eth answers</span><span>Kleros Court disputes</span><span>ERC-20 outcomes</span></div></div>
+      <div class="layer chain"><span>Gnosis Chain</span><span>Ethereum</span><span>Optimism</span></div>
+    </div>
+  </div>
+
+  <div class="pagehead"><div class="titles"><span class="eyebrow">Same protocol, five question shapes</span><h2>Pick the app by the question you are asking</h2><p class="sub">Each example below is a real market on Seer right now.</p></div></div>
+  <div class="grid g3">
+    <div class="card shape-card"><span class="tag">Seer app</span><p class="q">“Who will win Brazil's 2026 presidential election?”</p><p class="sub">Binary, categorical, scalar and conditional markets in one explorer. Every market links to its contract address.</p><a href="#app" class="small">Open the explorer →</a></div>
+    <div class="card shape-card"><span class="tag">Deep</span><p class="q">“How original will jurors rate each of 98 Ethereum repos?”</p><p class="sub">One question, 98 scalar outcomes. Funders see which projects the market rates highest before the jury reports.</p><a href="#deep" class="small">See Deep Round 3 →</a></div>
+    <div class="card shape-card"><span class="tag">Futarchy</span><p class="q">“What happens to ETH if EIP-8363 is scheduled, and if it isn't?”</p><p class="sub">Two conditional markets side by side. Core devs still decide; the markets add information.</p><a href="#futarchy" class="small">Compare the branches →</a></div>
+    <div class="card shape-card"><span class="tag">Opportunity Markets</span><p class="q">“Which of 234 names will the AI job board adopt?”</p><p class="sub">Traders back the entries they expect to be chosen. The team keeps the final call.</p><a href="#opportunity" class="small">View the field →</a></div>
+    <div class="card shape-card"><span class="tag">Risk Pricing</span><p class="q">“What is the yearly chance USDF defaults?”</p><p class="sub">Market estimates of default probability for 33 assets, set against Credora ratings so you can compare them.</p><a href="#risk" class="small">Compare risk →</a></div>
+    <div class="card shape-card" style="background:var(--sec)"><span class="tag plain">Build your own</span><p class="q">“My question doesn't fit any of these.”</p><p class="sub">Create any market on the protocol from a Reality.eth template. It shows up in the Seer app immediately.</p><button class="small" style="text-align:left;color:var(--sec-text)" data-toast="Market creation opens in the Seer app">Create a market →</button></div>
+  </div>
+
+  <div id="how" class="pagehead"><div class="titles"><span class="eyebrow">Lifecycle</span><h2>How every Seer market resolves</h2></div></div>
+  <div class="steps">
+    <div class="card step"><span class="n">1</span><h3>Ask and trade</h3><p class="sub">Anyone opens a market from a Reality.eth question. Collateral splits into ERC-20 outcome tokens that trade on any DEX, and merge back into collateral at any time.</p></div>
+    <div class="card step"><span class="n">2</span><h3>Answer with a bond</h3><p class="sub">When the answer window opens, someone posts the answer to Reality.eth with a bond. Anyone who disagrees posts double the bond.</p></div>
+    <div class="card step"><span class="n">3</span><h3>Dispute in Kleros Court</h3><p class="sub">Contested answers go to Kleros jurors. Once final, winning tokens redeem for collateral. An Invalid answer splits it back.</p></div>
+  </div>
+</section>
+
+<!-- ============ SEER APP ============ -->
+<section class="view" id="v-app" data-view="app" hidden>
+  <div class="pagehead">
+    <div class="titles"><span class="eyebrow">Seer app · Explorer</span><h2>Markets on Seer</h2><p class="sub">Every market type on every chain. Look up a market, a question or a contract address.</p></div>
+    <div class="statline"><div class="stat"><b class="num" id="appLiq"></b><span>Liquidity shown</span></div><div class="stat"><b class="num" id="appCount"></b><span>Markets shown</span></div></div>
+  </div>
+  <div class="filters">
+    <div class="seg" id="typeSeg" role="group" aria-label="Market type">
+      <button aria-pressed="true" data-type="all">All types</button><button aria-pressed="false" data-type="binary">Binary</button><button aria-pressed="false" data-type="categorical">Categorical</button><button aria-pressed="false" data-type="scalar">Scalar</button><button aria-pressed="false" data-type="conditional">Conditional</button>
+    </div>
+    <div class="seg" id="chainSeg" role="group" aria-label="Chain">
+      <button aria-pressed="true" data-chain="all">All chains</button><button aria-pressed="false" data-chain="Gnosis">Gnosis</button><button aria-pressed="false" data-chain="Ethereum">Ethereum</button>
+    </div>
+  </div>
+  <div class="split">
+    <div class="grid g3" id="mktGrid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))"></div>
+    <aside class="side">
+      <div class="card card-pad"><h3>Deepest liquidity</h3><div class="feed" id="liqFeed"></div></div>
+      <div class="card card-pad"><h3>Answer windows</h3><p class="small">When Reality.eth starts taking answers</p><div class="feed" id="resFeed"></div></div>
+    </aside>
+  </div>
+  <p class="demo-flag">Odds are Seer's pool-implied prices and may not add up to 100%. Trade buttons open a demo ticket; nothing is sent onchain.</p>
+</section>
+
+<!-- ============ DEEP ============ -->
+<section class="view" id="v-deep" data-view="deep" hidden>
+  <div class="pagehead">
+    <div class="titles"><span class="eyebrow">Deep · Many-outcome market</span><h2>Deep Funding Round 3: how original will jurors rate each repo?</h2><p class="sub">98 Ethereum repositories. A jury scores each one 0–100 for originality. Each repo is a scalar market, so its UP price is the market's expected score.</p></div>
+    <div class="statline"><div class="stat"><b class="num">98</b><span>Repos</span></div><div class="stat"><b>Optimism</b><span>Settles in sUSDS</span></div><div class="stat"><b>Pending</b><span>Jury result</span></div></div>
+  </div>
+  <div class="row" style="justify-content:space-between;flex-wrap:wrap;padding-block:10px"><span>An earlier Deep round priced how the Ethereum Foundation split <b>$350K</b> across thousands of open-source dependencies.</span><span class="tag plain">Dependency weighting</span></div>
+  <div class="split">
+    <div class="card card-pad" style="gap:12px">
+      <div class="filters" style="justify-content:space-between">
+        <div class="seg" id="deepSort" role="group" aria-label="Sort"><button aria-pressed="true" data-s="score">Highest expected score</button><button aria-pressed="false" data-s="name">A–Z</button></div>
+        <span class="small">Top 20 of 98 shown</span>
+      </div>
+      <div class="deep-row" style="background:none;padding-block:0;font-size:12px;color:var(--muted)"><span>#</span><span>Repository</span><span class="hide-sm">Expected originality</span><span class="r">Score</span><span class="r hide-sm">UP</span></div>
+      <div class="grid" style="gap:6px" id="deepList"></div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><a class="pill-btn btn-sec" href="https://deep.seer.pm/" target="_blank" rel="noopener" style="text-decoration:none">All 98 on deep.seer.pm</a><button class="pill-btn btn-ghost" id="deepExportBtn" aria-expanded="false" style="background:var(--nest)">Show agent export</button></div>
+      <pre class="export" id="deepExport" hidden></pre>
+    </div>
+    <aside class="side">
+      <div class="card card-pad"><h3>Where the top 20 sit</h3><div class="chart" id="deepHist"></div><p class="small">Expected originality score, 0–100 scale zoomed to 76–90</p></div>
+      <div class="card card-pad" style="gap:10px"><h3>How this round settles</h3>
+        <div class="row"><span class="grow">Question</span><span class="small">Avg jury originality, 0–100</span></div>
+        <div class="row"><span class="grow">Markets</span><span class="small">98 scalar, in bundles A/B/C</span></div>
+        <div class="row"><span class="grow">Collateral</span><span class="small">sUSDS on Optimism</span></div>
+        <div class="row"><span class="grow">Oracle</span><span class="small">Reality.eth, opened 1 Oct</span></div>
+        <p class="addr">parent 0x37ab…fd87</p>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ FUTARCHY ============ -->
+<section class="view" id="v-futarchy" data-view="futarchy" hidden>
+  <div class="pagehead">
+    <div class="titles"><span class="eyebrow">Futarchy · Ethereum</span><h2>EIP-8363: Tapered Issuance Burn, scheduled for Hegotá?</h2><p class="sub">Success measure: WETH price in USDS, 5-day TWAP. Include if the pass branch beats fail by more than 1%, exclude if fail wins by more than 1%, otherwise neutral.</p></div>
+    <div class="statline"><div class="stat"><b class="num">30%</b><span>Chance it's scheduled</span></div><div class="stat"><b class="num">~1.52M</b><span>USDS volume per side</span></div><div class="stat"><b>24 Oct</b><span>00:00 UTC close</span></div></div>
+  </div>
+  <div class="split">
+    <div class="grid" style="gap:16px">
+      <div class="card card-pad" style="gap:16px">
+        <div class="cond">
+          <div class="side-box"><span class="small">If scheduled (YES_WETH)</span><b class="num">$2,401.22</b><span class="small">WETH price in USDS</span></div>
+          <div class="side-box"><span class="small">If not (NO_WETH)</span><b class="num">$2,401.23</b><span class="small">WETH price in USDS</span></div>
+        </div>
+        <div class="row" style="justify-content:space-between;flex-wrap:wrap;padding-block:10px"><span>Gap: <b class="num">−0.0004%</b>, inside the ±1% band. Markets see no effect on ETH either way.</span><span class="tag plain">Neutral</span></div>
+        <div class="legend"><span><i style="background:var(--primary)"></i>If scheduled</span><span><i style="background:var(--muted)"></i>If not</span><span><i style="background:var(--sec);height:8px"></i>±1% neutral band</span></div>
+        <div class="chart" id="futChart"></div>
+        <div><p class="small" style="margin-bottom:8px">Outcome tokens in this decision</p>
+        <div class="tok-grid">
+          <div class="row"><span class="mono grow">YES_WETH</span><span class="small">WETH if scheduled</span></div>
+          <div class="row"><span class="mono grow">NO_WETH</span><span class="small">WETH if not</span></div>
+          <div class="row"><span class="mono grow">YES_USDS</span><span class="small">USDS if scheduled</span></div>
+          <div class="row"><span class="mono grow">NO_USDS</span><span class="small">USDS if not</span></div>
+        </div></div>
+        <div class="cond">
+          <button class="big-btn btn-primary" data-trade='{"q":"WETH if EIP-8363 is scheduled","a":"Long","b":"Short","pa":0.5,"pb":0.5}'>Trade the scheduled branch</button>
+          <button class="big-btn btn-sec" data-trade='{"q":"WETH if EIP-8363 is not scheduled","a":"Long","b":"Short","pa":0.5,"pb":0.5}'>Trade the other branch</button>
+        </div>
+      </div>
+      <div class="note"><svg width="16" height="16"><use href="#i-info"/></svg><span>These markets give core devs information. They do not decide inclusion. Trades on the branch that does not happen are refunded.</span></div>
+    </div>
+    <aside class="side">
+      <div class="card card-pad"><h3>Recent decisions</h3><div class="prop-list" id="propList"></div></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ OPPORTUNITY ============ -->
+<section class="view" id="v-opportunity" data-view="opportunity" hidden>
+  <div class="pagehead">
+    <div class="titles"><span class="eyebrow">Opportunity Market · Seer</span><h2>What name will the futarchy-run AI job board adopt?</h2><p class="sub">234 proposed names across three linked levels. Each level holds 78 names plus “Other”, which rolls into the next level. Prices are the market's estimate that the team picks that name.</p></div>
+    <div class="statline"><div class="stat"><b class="num">234</b><span>Names</span></div><div class="stat"><b class="num">$1,062</b><span>Liquidity</span></div><div class="stat"><b class="num">$5,090</b><span>Volume</span></div></div>
+  </div>
+  <div class="split">
+    <div class="grid" style="gap:8px" id="oppList"></div>
+    <aside class="side">
+      <div class="card card-pad receipt"><h3>Last time: market vs. team</h3><p class="small">Seer Rebrand Contest, 16 entries. Prices are the last close before the team voted.</p><div class="grid" style="gap:6px" id="receipt"></div><p class="sub">The team chose Electric Foundation, the market favourite at 80.1%.</p></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ RISK ============ -->
+<section class="view" id="v-risk" data-view="risk" hidden>
+  <div class="pagehead">
+    <div class="titles"><span class="eyebrow">Risk Pricing</span><h2>Market-priced default risk across DeFi</h2><p class="sub">Each number is the market's estimate of an asset's yearly Probability of Default (PD), next to its Credora rating. Select up to three assets to compare.</p></div>
+    <div class="tabs" role="group" aria-label="Quarter"><button class="tab" aria-pressed="true">Q3 2026</button><button class="tab" aria-pressed="false" data-toast="Q4 2026 markets are coming soon">Q4 2026 · soon</button></div>
+  </div>
+  <div class="warnbar"><svg width="16" height="16"><use href="#i-info"/></svg><span>Q3 trading ended 30 Sep. Prices were last updated 20 Aug, so treat these as the closing read of the round.</span></div>
+  <div class="grid g3" id="riskSummary" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))"></div>
+  <div class="split">
+    <div class="grid" style="gap:12px">
+      <div class="filters" style="justify-content:space-between">
+        <div class="seg" id="riskCat" role="group" aria-label="Asset type"><button aria-pressed="true" data-c="all">All 33</button><button aria-pressed="false" data-c="Stablecoin">Stablecoins</button><button aria-pressed="false" data-c="Derivative">Derivatives</button><button aria-pressed="false" data-c="Tokenized">Tokenized assets</button></div>
+        <div class="legend"><span><i style="background:var(--good)"></i>Under 0.5%</span><span><i style="background:var(--warn)"></i>0.5–3%</span><span><i style="background:var(--bad)"></i>Over 3%</span></div>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th style="width:36px"></th><th>Asset</th><th>Type (Credora)</th><th class="r">Yearly PD</th><th>Odds</th><th>PD on 0–16% scale</th><th>Credora</th><th></th></tr></thead>
+        <tbody id="riskBody"></tbody>
+      </table></div>
+    </div>
+    <aside class="side">
+      <div class="card card-pad" style="gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><h3>Compare</h3><button class="small" id="cmpClear">Clear</button></div>
+        <div class="cmp-bars" id="cmpBars"></div>
+        <p class="small">Bar length is yearly PD on a 0–16% scale. “1 in N” is the market's implied chance of default within a year.</p>
+      </div>
+      <div class="card card-pad" style="gap:10px"><h3>Disagree with a number?</h3><p class="sub">Set your own estimate for any asset. The same capital backs estimates on every asset at once.</p><button class="big-btn btn-primary" data-trade='{"q":"USDF yearly PD, Q3 2026","a":"Higher","b":"Lower","pa":0.5,"pb":0.5}'>Set estimates</button></div>
+    </aside>
+  </div>
+  <p class="demo-flag">Market on Gnosis 0xc847…e6F2. Credora ratings from risk.seer.pm. Not risk advice.</p>
+</section>
+
+<footer class="sitefoot" style="display:grid;gap:12px">
+  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between"><span>Seer · built on Conditional Tokens, Reality.eth and Kleros</span><span>Redesign concept on the Electric Foundation kit</span></div>
+  <div class="sources"><span>Data snapshot 23 Oct 2026 07:56 UTC from Seer's own endpoints:</span><span>risk.seer.pm/api/v1/risk-pricing · risk.seer.pm/api/credora</span><span>app.seer.pm/.netlify/functions/markets-search · market-chart</span><span>api.futarchy.seer.pm/registry/graphql · candles/graphql</span><span>deep.seer.pm originality round 3 markets data</span></div>
+</footer>
+</main>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetQ">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><h3 id="sheetQ"></h3><button class="icon-btn" id="sheetClose" aria-label="Close" style="width:32px;height:32px"><svg width="16" height="16"><use href="#i-x"/></svg></button></div>
+    <div class="outcome-pick" id="sheetPick"></div>
+    <div class="amount"><span>Amount</span><input id="amt" inputmode="decimal" value="$100.00" aria-label="Amount in USD"></div>
+    <div class="quick"><button data-add="1">+$1</button><button data-add="5">+$5</button><button data-add="20">+$20</button><button data-add="100">+$100</button></div>
+    <div class="row" style="justify-content:space-between"><span class="small">Potential payout</span><b class="num" id="payout"></b></div>
+    <div class="sheet-actions"><button class="big-btn btn-primary" id="confirm">Confirm</button><button class="x" id="sheetX" aria-label="Cancel"><svg width="18" height="18"><use href="#i-x"/></svg></button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tj=o=>esc(JSON.stringify(o));
+const short=a=>a.slice(0,6)+'…'+a.slice(-4);
+const usd=n=>'$'+Math.round(n).toLocaleString('en-US');
+const pct=(p,d)=>(p*100).toFixed(d==null?(p<0.1?1:0):d)+'%';
+
+/* theme */
+const saved=store.get('seer-theme'); if(saved) document.documentElement.dataset.theme=saved;
+function isDark(){const t=document.documentElement.dataset.theme;return t?t==='dark':!matchMedia('(prefers-color-scheme: light)').matches}
+$('#themeBtn').onclick=()=>{const n=isDark()?'light':'dark';document.documentElement.dataset.theme=n;store.set('seer-theme',n);redraw()};
+
+/* toast */
+let tt;function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,2600)}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-toast]');if(b){e.preventDefault();toast(b.dataset.toast)}});
+
+/* router */
+const views=['home','app','deep','futarchy','opportunity','risk'];
+function route(){let h=(location.hash||'#'+(document.documentElement.dataset.view||'home')).slice(1);if(h==='how'){show('home');setTimeout(()=>document.getElementById('how').scrollIntoView({behavior:'smooth'}),0);return}if(!views.includes(h))h='home';show(h);window.scrollTo(0,0)}
+function show(v){$$('[data-view]').forEach(s=>s.hidden=s.dataset.view!==v);$$('.lens[href]').forEach(a=>a.removeAttribute('aria-current'));const a=$(`.lens[data-v="${v}"]`);if(a)a.setAttribute('aria-current','page');redraw()}
+addEventListener('hashchange',route);
+
+/* trade sheet */
+let pick={};
+function openTrade(d){pick={...d,sel:'a'};$('#sheetQ').textContent=d.q;
+  $('#sheetPick').innerHTML=`<button aria-pressed="true" data-o="a"><small>${esc(d.a)}</small><b class="num">${Math.round(d.pa*100)}¢</b></button><button aria-pressed="false" data-o="b"><small>${esc(d.b)}</small><b class="num">${Math.round(d.pb*100)}¢</b></button>`;
+  $('#amt').value='$100.00';calc();$('#scrim').hidden=false;$('#confirm').focus()}
+function amt(){return Math.max(0,parseFloat(($('#amt').value||'').replace(/[^0-9.]/g,''))||0)}
+function calc(){const p=pick.sel==='a'?pick.pa:pick.pb;$('#payout').textContent='$'+(amt()/Math.max(p,.01)).toFixed(2)}
+$('#sheetPick').onclick=e=>{const b=e.target.closest('button');if(!b)return;pick.sel=b.dataset.o;$$('#sheetPick button').forEach(x=>x.setAttribute('aria-pressed',x===b));calc()};
+$$('.quick button').forEach(b=>b.onclick=()=>{$('#amt').value='$'+(amt()+ +b.dataset.add).toFixed(2);calc()});
+$('#amt').oninput=calc;
+const close=()=>$('#scrim').hidden=true;
+$('#sheetClose').onclick=close;$('#sheetX').onclick=close;$('#scrim').onclick=e=>{if(e.target.id==='scrim')close()};
+addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+$('#confirm').onclick=()=>{close();toast('Demo ticket: no transaction was sent')};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-trade]');if(b)openTrade(JSON.parse(b.dataset.trade))});
+
+/* ---------- real Seer data, snapshot 2026-10-23 07:56 UTC ---------- */
+const MKTS=[
+ {t:'categorical',chain:'Gnosis',q:'Which party or joint electoral list will win the most seats in the 2026 Israeli Knesset election?',px:{'Yashar':.66,'Likud':.322,'Others':.007},st:'open',res:'2026-07-17',liq:27585,vol:6401,addr:'0x31cb54c49479243333594eb7343d31f6bd1ddfd3'},
+ {t:'conditional',sub:'binary',chain:'Gnosis',q:'Will the National Rally’s candidate win the next French presidential election?',parent:'If Marine Le Pen is the candidate (Yes 84%)',px:{'Yes':.377,'No':.745},st:'open',res:'2025-04-07',liq:7581,vol:11806,addr:'0xbbf8f7e40a9234d965f59802c1b3720b21bcc32e'},
+ {t:'binary',chain:'Gnosis',q:'Will any Kurdish militant group launch a confirmed armed attack inside Iran in 2026?',px:{'Yes':.091,'No':.91},st:'not_open',res:'2027-01-01',liq:1120,vol:726,addr:'0xc57764377e06fa317457a123b2c25f031c088e17'},
+ {t:'scalar',chain:'Gnosis',q:'How many Polymarket clarification notes published before 1 Jan 2027 will move a market price?',range:[10,50],up:.295,est:21.8,unit:'notes',st:'open',res:'2026-06-22',liq:1112,vol:89,addr:'0x736feaf877de6523ca001ab3e3a229e80d7af00b'},
+ {t:'binary',chain:'Gnosis',q:'Will a treaty transferring sovereignty over Greenland from Denmark to the United States be signed?',px:{'Yes':.048,'No':.948},st:'not_open',res:'2027-01-01',liq:1099,vol:686,addr:'0x0b5f90febc2fc44c43985b2a712f159ca059d93a'},
+ {t:'binary',chain:'Gnosis',q:'Will the Digital Asset Market Clarity Act be approved by the U.S. Senate in 2026?',px:{'Yes':.334,'No':.697},st:'open',res:'2026-05-15',liq:919,vol:966,addr:'0xe820d073f8885f4a24328ba9fbb8a745114bb647'},
+ {t:'scalar',chain:'Gnosis',q:'Average Ethereum BASEFEE (gwei), 1–31 January 2027',range:[0.1,120],up:.075,est:9.09,unit:'gwei',st:'not_open',res:'2027-02-01',liq:828,vol:143,addr:'0x2324741962ff5b8331dbbdc88de8cf1c06fa5ca8'},
+ {t:'categorical',chain:'Gnosis',q:'Which blockchain will have the highest TVL in euro-pegged stablecoins?',px:{'Ethereum':.934,'Other blockchains':.05,'Solana':.01},st:'not_open',res:'2026-12-31',liq:564,vol:2797,addr:'0x21e5fc95afe520e0e26acccb28daed15d48e2555'},
+ {t:'conditional',sub:'scalar',chain:'Gnosis',q:'Which percentile score will Clément assign to Elysium (2013)?',parent:'If Clément watches Elysium (2013)',range:[0,100],up:.717,est:71.7,unit:'pct',st:'open',res:'2025-06-25',liq:456,vol:1482,addr:'0xc0dab34c6c2008391bdc742cec0bd0afb60d4d59'},
+ {t:'categorical',chain:'Gnosis',q:'Who will win the 2026 Brazilian presidential election?',px:{'Flávio Bolsonaro':.797,'Lula da Silva':.211,'Renan Santos':.003},st:'open',res:'2026-07-17',liq:151,vol:2139,addr:'0x95149fcc1eb9ec665a5984c33927b991dd66a355'},
+ {t:'conditional',sub:'futarchy',chain:'Ethereum',q:'EIP-8363 futarchy: WETH price if scheduled vs. if not',parent:'Decision market, 4 conditional tokens',px:{'Scheduled':.30,'Not scheduled':.70},st:'open',res:'2026-10-24',liq:0,vol:1520000,addr:'0x0d78b95fca9f3e1b588271a330b0d6f731ec38aa',link:'#futarchy'}
+];
+const TCOL={binary:'#3E7BFA',categorical:'#0FA37F',scalar:'#C98A1B',conditional:'#7638FA'};
+const TICO={binary:'Y/N',categorical:'≡',scalar:'↕',conditional:'IF'};
+function mktCard(m){
+  let body='';const qq=m.q.length>70?m.q.slice(0,68)+'…':m.q;
+  if(m.range){const pos=(m.est-m.range[0])/(m.range[1]-m.range[0]);body=`<div class="scalar"><div style="display:flex;justify-content:space-between"><span class="small">Market estimate</span><b class="num">${m.est} ${esc(m.unit)}</b></div><div class="scalar-track"><i style="left:${(pos*100).toFixed(1)}%"></i></div><div class="scalar-lbl"><span>${m.range[0]}</span><span>${m.range[1]}</span></div></div><div style="display:flex;gap:8px"><button class="big-btn btn-primary" data-trade="${tj({q:qq,a:'UP',b:'DOWN',pa:m.up,pb:+(1-m.up).toFixed(3)})}">UP</button><button class="big-btn btn-sec" data-trade="${tj({q:qq,a:'DOWN',b:'UP',pa:+(1-m.up).toFixed(3),pb:m.up})}">DOWN</button></div>`}
+  else{const ent=Object.entries(m.px);const yes=ent.find(([k])=>k==='Yes');
+    if(yes&&ent.length===2){const no=ent.find(([k])=>k==='No')[1];body=`<div class="row" style="justify-content:space-between"><span>Yes</span><b class="num">${pct(yes[1])}</b></div><div style="display:flex;gap:8px"><button class="big-btn btn-primary" data-trade="${tj({q:qq,a:'Yes',b:'No',pa:yes[1],pb:no})}">Yes</button><button class="big-btn btn-sec" data-trade="${tj({q:qq,a:'No',b:'Yes',pa:no,pb:yes[1]})}">No</button></div>`}
+    else body=ent.map(([n,p])=>`<div class="row"><span class="grow">${esc(n)}</span><b class="num">${pct(p)}</b>${m.link?'':`<button class="chip chip-yes" data-trade="${tj({q:qq+': '+n,a:'Yes',b:'No',pa:p,pb:+(1-p).toFixed(3)})}">Yes</button><button class="chip chip-no" data-trade="${tj({q:qq+': '+n,a:'No',b:'Yes',pa:+(1-p).toFixed(3),pb:p})}">No</button>`}</div>`).join('')}
+  const stTag=m.st==='open'?'<span class="tag warn st-tag">Answer window open</span>':'<span class="tag good st-tag">Trading</span>';
+  const href=m.link||`https://app.seer.pm/markets/${m.chain==='Ethereum'?1:100}/${m.addr}`;
+  return `<article class="card"><div class="mkt-title"><span class="mkt-ico" style="background:${TCOL[m.t]}" aria-hidden="true">${TICO[m.t]}</span><p>${esc(m.q)}</p></div>${m.parent?`<div class="small" style="padding:0 2px">↳ ${esc(m.parent)}</div>`:''}${body}<div class="oracle"><i></i>Reality.eth answer · Kleros Court on dispute</div><div class="foot"><span>${m.liq?usd(m.liq)+' liq.':''}${m.liq?' · ':''}${usd(m.vol)} vol.</span><span class="sp"></span><span class="tag plain">${m.t[0].toUpperCase()+m.t.slice(1)}${m.sub?' · '+m.sub:''}</span></div><div class="foot" style="padding-top:0"><span class="addr">${m.chain} · ${short(m.addr)}</span><span class="sp"></span>${stTag}<a class="small" href="${href}" ${m.link?'':'target="_blank" rel="noopener"'}>Open</a></div></article>`;
+}
+let fType='all',fChain='all';
+function renderMkts(){const q=($('#q').value||'').toLowerCase().trim();const list=MKTS.filter(m=>(fType==='all'||m.t===fType)&&(fChain==='all'||m.chain===fChain)&&(!q||m.q.toLowerCase().includes(q)||m.addr.toLowerCase().includes(q)));
+  $('#mktGrid').innerHTML=list.map(mktCard).join('')||'<div class="card card-pad"><h3>No markets match</h3><p class="sub">Clear the search or pick another market type or chain.</p></div>';
+  $('#appCount').textContent=list.length;$('#appLiq').textContent=usd(list.reduce((s,m)=>s+m.liq,0))}
+function segBind(id,attr,fn){$(id).onclick=e=>{const b=e.target.closest('button');if(!b)return;$$(id+' button').forEach(x=>x.setAttribute('aria-pressed',x===b));fn(b.dataset[attr])}}
+segBind('#typeSeg','type',v=>{fType=v;renderMkts()});segBind('#chainSeg','chain',v=>{fChain=v;renderMkts()});
+$('#q').addEventListener('input',()=>{if(location.hash!=='#app'&&$('#q').value)location.hash='#app';renderMkts()});
+const nice=d=>new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+const sq=q=>q.length>44?q.slice(0,42)+'…':q;
+$('#liqFeed').innerHTML=[...MKTS].filter(m=>m.liq).sort((a,b)=>b.liq-a.liq).slice(0,5).map(m=>`<div class="feed-row"><span class="mkt-ico" style="width:28px;height:28px;font-size:10px;background:${TCOL[m.t]}" aria-hidden="true">${TICO[m.t]}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sq(m.q))}<br><span class="addr">${short(m.addr)}</span></span><span class="r num">${usd(m.liq)}</span></div>`).join('');
+$('#resFeed').innerHTML=[...MKTS].filter(m=>m.st==='not_open').sort((a,b)=>a.res.localeCompare(b.res)).map(m=>`<div class="feed-row"><span class="tag good">Trading</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sq(m.q))}</span><span class="r small">${nice(m.res)}</span></div>`).join('');
+
+/* deep: Round 3 originality, top 20 of 98 */
+const DEEP=[['supranational/blst',.887],['status-im/nimbus-eth2',.8768],['herumi/mcl',.8763],['flashbots/mev-boost',.8701],['ethereum/py_ecc',.8499],['ethereum/consensus-specs',.8334],['libp2p/libp2p',.8324],['sigp/lighthouse',.8261],['ethers-io/ethers.js',.823],['openzeppelin/openzeppelin-contracts',.8203],['ethereum/eips',.7979],['consensys/teku',.7976],['arkworks-rs/algebra',.7954],['Consensys/gnark-crypto',.7948],['ethereum/go-ethereum',.7941],['chainsafe/lodestar',.7902],['nethereum/nethereum',.7892],['argotorg/solidity',.7812],['skalenetwork/libBLS',.7803],['Vectorized/solady',.7734]].map(([repo,up],i)=>({repo,up,score:up*100,rank:i+1}));
+let deepSort='score';
+function renderDeep(){const arr=[...DEEP].sort((a,b)=>deepSort==='score'?b.up-a.up:a.repo.toLowerCase().localeCompare(b.repo.toLowerCase()));
+  $('#deepList').innerHTML=arr.map(d=>{const [org,name]=d.repo.split('/');return `<div class="deep-row"><span class="rank">${String(d.rank).padStart(2,'0')}</span><span style="min-width:0" class="repo"><div class="ttl"><a href="https://github.com/${esc(d.repo)}" target="_blank" rel="noopener">${esc(name)}</a></div><div class="who">${esc(org)}</div></span><span class="hide-sm"><div class="bar"><i style="width:${d.score}%"></i></div></span><b class="r num">${d.score.toFixed(1)}</b><span class="r num hide-sm small">${d.up.toFixed(3)}</span></div>`}).join('')}
+segBind('#deepSort','s',v=>{deepSort=v;renderDeep()});
+function drawHist(){const lo=76,hi=90,bins=Array(7).fill(0);DEEP.forEach(d=>bins[Math.min(6,Math.floor((d.score-lo)/2))]++);const W=300,H=130,pb=20,max=Math.max(...bins),bw=W/7;
+  $('#deepHist').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Expected originality scores of the top 20 repos">${bins.map((v,i)=>{const h=(H-pb-8)*v/max;return `<rect x="${i*bw+3}" y="${H-pb-h}" width="${bw-6}" height="${h}" rx="3" fill="${i>=5?css('--primary'):css('--nest-2')}"/>${v?`<text x="${i*bw+bw/2}" y="${H-pb-h-4}" text-anchor="middle">${v}</text>`:''}`}).join('')}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="${css('--line')}"/>${[76,80,84,88].map(v=>`<text x="${(v-lo)/2*bw+4}" y="${H-5}" text-anchor="start">${v}</text>`).join('')}</svg>`}
+$('#deepExportBtn').onclick=()=>{const p=$('#deepExport'),open=p.hidden;p.hidden=!open;$('#deepExportBtn').setAttribute('aria-expanded',open);$('#deepExportBtn').textContent=open?'Hide agent export':'Show agent export';
+  if(open)p.textContent=JSON.stringify({market:'Deep Funding Round 3 - Originality',chain:'optimism',collateral:'sUSDS',parent:'0x37ab5cbeee3a32289430e5d38b914ec7f580fd87',priced:'expected average jury originality score, 0-100 (UP price x 100)',use:'which repos funders read first; the jury still scores',resolution:'Reality.eth, Kleros Court on dispute',snapshot:'2026-10-23T07:56Z',top:DEEP.map(d=>({repo:d.repo,up:d.up,expected_score:+d.score.toFixed(1)}))},null,2)};
+
+/* futarchy: EIP-8363 daily closes, WETH in USDS */
+const FH=[['10-08',2475.56,2475.43],['10-09',2484.46,2484.33],['10-10',2498.9,2498.74],['10-12',2446.3,2446.22],['10-13',2498.89,2498.73],['10-14',2416.33,2416.31],['10-15',2440.34,2440.28],['10-16',2422.79,2422.76],['10-17',2398.85,2398.86],['10-18',2406.82,2406.81],['10-19',2407.25,2407.24],['10-20',2446.77,2446.7],['10-21',2472.33,2472.23],['10-22',2384.99,2385.02],['10-23',2401.22,2401.23]];
+function drawFut(){const W=640,H=230,l=50,r=12,t=10,b=26,n=FH.length;const mn=2340,mx=2540;
+  const X=i=>l+(W-l-r)*i/(n-1),Y=v=>t+(H-t-b)*(1-(v-mn)/(mx-mn));const path=k=>FH.map((d,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(d[k]).toFixed(1)).join('');
+  const band=FH.map((d,i)=>X(i).toFixed(1)+' '+Y(d[2]*1.01).toFixed(1)).join(' L')+' L'+[...FH].reverse().map((d,j)=>X(n-1-j).toFixed(1)+' '+Y(d[2]*0.99).toFixed(1)).join(' L');
+  const ticks=[2350,2400,2450,2500];const lab=[0,4,9,14];
+  $('#futChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="WETH price if EIP-8363 is scheduled versus if not, with the 1% neutral band">${ticks.map(v=>`<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css('--line')}"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end">$${v.toLocaleString('en-US')}</text>`).join('')}${lab.map((i,k)=>`<text x="${X(i)}" y="${H-6}" text-anchor="${k===0?'start':k===3?'end':'middle'}">${nice('2026-'+FH[i][0]).replace(' 2026','')}</text>`).join('')}<path d="M${band}Z" fill="${css('--sec')}" opacity=".9"/><path d="${path(2)}" fill="none" stroke="${css('--muted')}" stroke-width="4" stroke-linejoin="round"/><path d="${path(1)}" fill="none" stroke="${css('--primary')}" stroke-width="2" stroke-linejoin="round"/><circle cx="${X(n-1)}" cy="${Y(FH[n-1][1])}" r="4.5" fill="${css('--primary')}"/></svg><p class="small" style="margin-top:6px">Daily closes, 8–23 Oct. No trades on 11 Oct; 23 Oct is partial. The two lines overlap because the branches price ETH almost identically.</p>`}
+const PL=[['GIP-153','Move Gnosis Chain into the Ethereum Economic Zone','GNO $90.08 vs $90.34','Snapshot passed','good'],['GIP-152','Spin out the Gnosis App as a company','GNO $84.77 vs $84.77','Snapshot passed · pools empty','plain']];
+$('#propList').innerHTML=PL.map(p=>`<div class="row" style="padding-block:10px;align-items:flex-start;flex-direction:column;gap:4px"><span class="mono small">${p[0]}</span><span>${p[1]}</span><span style="display:flex;width:100%;justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="small num">${p[2]}</span><span class="tag ${p[4]}">${p[3]}</span></span></div>`).join('')+'<p class="small">Pass vs. fail prices are GNO in sDAI. Onchain resolution not yet confirmed.</p>';
+
+/* opportunity: AI job board, level-1 top 8 */
+const OPP=[['delegateyourjob.ai',.065],['Zetsu.AI',.05],['Workmesh',.043],['Foreguild',.039],['Seek',.028],['Auspex',.024],['AgenticGigs',.022],['Vantage',.022]];
+const REB=[['Electric Foundation',.801],['Signal Convergence',.103],['Signal Dark',.029],['Convergent',.01]];
+function renderOpp(){const max=OPP[0][1];$('#oppList').innerHTML=OPP.map(([n,p],i)=>`<div class="card opp" style="padding:14px 16px"><div style="display:grid;gap:6px;min-width:0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="rank">${String(i+1).padStart(2,'0')}</span><b style="overflow:hidden;text-overflow:ellipsis">${esc(n)}</b>${i===0?'<span class="tag">Market favourite</span>':''}</div><div class="bar"><i style="width:${p/max*100}%"></i></div></div><div style="display:grid;gap:6px;justify-items:end"><b class="num" style="font:600 22px var(--f-display)">${pct(p,1)}</b><div style="display:flex;gap:6px"><button class="chip chip-yes" data-trade="${tj({q:'AI job board adopts “'+n+'”?',a:'Picked',b:'Not picked',pa:p,pb:+(1-p).toFixed(3)})}">Picked</button><button class="chip chip-no" data-trade="${tj({q:'AI job board adopts “'+n+'”?',a:'Not picked',b:'Picked',pa:+(1-p).toFixed(3),pb:p})}">Not</button></div></div></div>`).join('')+'<div class="note"><svg width="16" height="16"><use href="#i-info"/></svg><span>No name is above 7%, so the field is wide open. Prices give the team a signal; the team still picks. Showing the top 8 of 78 level-1 names.</span></div>';
+  $('#receipt').innerHTML=REB.map(([n,p],i)=>`<div class="row ${i===0?'won':''}"><span class="grow">${esc(n)}</span>${i===0?'<span class="tag good">Chosen</span>':''}<b class="num">${pct(p,1)}</b></div>`).join('')}
+
+/* risk: Q3 2026, 33 assets */
+const RISK=[['USDF',15.803,'C-','Stablecoin - Active Strategy'],['avETH',12.577,'B-','Stablecoin - Active Strategy'],['avUSD',9.709,'B-','Stablecoin - Active Strategy'],['NUSD',7.115,'D','Stablecoin - Active Strategy'],['RUSD',5.509,'C','Stablecoin - Active Strategy'],['iUSD',3.023,'B-','Stablecoin - Active Strategy'],['satUSD+',2.432,'C','Stablecoin - Alternative Assets'],['U',2.331,'B-','Stablecoin - RWA Backed'],['solvBTC',2.274,'B','Derivative - Centralized Custody'],['USDO',2.072,'A-','Stablecoin - RWA Backed'],['UBTC',2.009,'B','Derivative - Centralized Custody'],['mF-ONE',1.921,'A-','Tokenized Assets - Credit'],['BTCB',.768,'B','Derivative - Centralized Custody'],['GACLO-1',.768,'B+','Tokenized Assets - Credit'],['bsdETH',.621,'B+','Derivative - Index'],['USDS',.48,'A-','Stablecoin - Alternative Assets'],['LBTC',.477,null,null],['ETH+',.461,'A-','Derivative - Index'],['USDT',.403,'A-','Stablecoin - RWA Backed'],['JAAA',.325,'A+','Tokenized Assets - Credit'],['pufETH',.294,'A','Derivative - Liquid Restaking'],['USD1',.276,'A','Stablecoin - RWA Backed'],['tBTC',.265,'A','Derivative - Wrapped'],['STAC',.251,'A+','Tokenized Assets - Fund'],['rETH',.237,'A-','Derivative - Liquid Staking'],['JTRSY',.213,'A+','Tokenized Assets - Fund'],['BUIDL-I',.166,'A+','Tokenized Assets - Fund'],['weETH',.091,'A+','Derivative - Liquid Restaking'],['stETH',.079,'A+','Derivative - Liquid Staking'],['PYUSD',.063,'A+','Stablecoin - RWA Backed'],['RLUSD',.049,'A+','Stablecoin - RWA Backed'],['USDC',.037,'A+','Stablecoin - RWA Backed'],['cbBTC',.035,'A+','Derivative - Centralized Custody']].map(([a,pd,cr,ty])=>({a,pd,cr,ty}));
+const tier=pd=>pd<0.5?'good':pd<=3?'warn':'bad';
+const oneIn=pd=>'1 in '+Math.round(100/pd).toLocaleString('en-US');
+const crTag=cr=>!cr?'<span class="tag plain">Not rated</span>':`<span class="tag ${cr[0]==='A'?'good':cr[0]==='B'?'warn':'bad'}">${cr}</span>`;
+const cautious=r=>r.cr&&r.cr[0]==='A'&&r.pd>1.5;
+let rCat='all',sel=new Set(['USDC','USDS','avUSD']);
+function renderRisk(){
+  const rows=RISK.filter(r=>rCat==='all'||(r.ty||'').startsWith(rCat));
+  $('#riskBody').innerHTML=rows.map(r=>{const t=tier(r.pd),on=sel.has(r.a);return `<tr class="${on?'sel':''}" data-a="${esc(r.a)}" style="cursor:pointer"><td><span class="check ${on?'on':''}" role="checkbox" aria-checked="${on}" aria-label="Compare ${esc(r.a)}" tabindex="0"></span></td><td><b style="font-weight:500">${esc(r.a)}</b>${cautious(r)?'<br><span class="flag">Market more cautious than rating</span>':''}</td><td><span class="small">${esc(r.ty||'No Credora data')}</span></td><td class="r"><span class="pd num" style="color:var(--${t})">${r.pd.toFixed(r.pd<1?2:1)}%</span></td><td class="small num">${oneIn(r.pd)}</td><td><div class="pdbar"><i style="width:${Math.max(2,r.pd/16*100)}%;background:var(--${t})"></i></div></td><td>${crTag(r.cr)}</td><td><button class="chip chip-no" data-trade="${tj({q:r.a+' yearly PD, Q3 2026',a:'Higher',b:'Lower',pa:.5,pb:.5})}">Estimate</button></td></tr>`}).join('');
+  const s=[...sel].map(n=>RISK.find(r=>r.a===n)).filter(Boolean);
+  $('#cmpBars').innerHTML=s.length?s.map(r=>`<div class="cmp-item"><div class="top"><span style="font-weight:500">${esc(r.a)}</span><b class="num" style="color:var(--${tier(r.pd)})">${r.pd.toFixed(r.pd<1?2:1)}%</b></div><div class="cmp-track"><i style="width:${Math.max(2,Math.min(100,r.pd/16*100))}%;background:var(--${tier(r.pd)})"></i></div><span class="small">${oneIn(r.pd)} chance of default within a year · Credora ${r.cr||'not rated'}</span></div>`).join(''):'<p class="sub">Tick up to three assets in the table to compare them here.</p>';
+  const sorted=[...RISK].sort((a,b)=>a.pd-b.pd),lo=sorted[0],hi=sorted.at(-1),med=sorted[16];
+  $('#riskSummary').innerHTML=`<div class="card card-pad"><span class="small">Lowest priced risk</span><b class="pd num" style="font-size:22px;color:var(--good)">${lo.pd.toFixed(3)}%</b><span class="sub">${lo.a} · ${oneIn(lo.pd)}</span></div><div class="card card-pad"><span class="small">Median of 33 assets</span><b class="pd num" style="font-size:22px;color:var(--warn)">${med.pd.toFixed(2)}%</b><span class="sub">${med.a}</span></div><div class="card card-pad"><span class="small">Highest priced risk</span><b class="pd num" style="font-size:22px;color:var(--bad)">${hi.pd.toFixed(1)}%</b><span class="sub">${hi.a} · ${oneIn(hi.pd)}</span></div><div class="card card-pad"><span class="small">Chance none of the 33 default</span><b class="pd num" style="font-size:22px">46.5%</b><span class="sub">The market's “No to All” outcome</span></div>`}
+function toggleSel(a){if(sel.has(a))sel.delete(a);else{if(sel.size>=3){toast('Compare up to three assets at a time');return}sel.add(a)}renderRisk()}
+$('#riskBody').addEventListener('click',e=>{if(e.target.closest('[data-trade]'))return;const tr=e.target.closest('tr');if(tr)toggleSel(tr.dataset.a)});
+$('#riskBody').addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&e.target.classList.contains('check')){e.preventDefault();toggleSel(e.target.closest('tr').dataset.a)}});
+$('#cmpClear').onclick=()=>{sel.clear();renderRisk()};
+segBind('#riskCat','c',v=>{rCat=v;renderRisk()});
+
+/* who asks / what's priced / how it's used + data chip, per app */
+const BRIEF={
+ app:['Anyone checking whether their question already has a market.','Every outcome on Seer, across all market types and chains.','Find the market, read it, trade it, or open it in the app built for it.'],
+ deep:['Funders deciding which of 98 Ethereum repos deserve weight.','The originality score a human jury will give each repo.','See where the market expects each repo to land before the jury reports.'],
+ futarchy:['Ethereum core devs and anyone following the EIP-8363 call.','ETH’s price if the EIP is scheduled for Hegotá, and if it isn’t.','Read the gap between the branches. Core devs still decide.'],
+ opportunity:['The Seer team, before it names the AI job board.','Each proposed name’s chance of being adopted.','A second signal for the team. The team still chooses.'],
+ risk:['Anyone sizing their exposure to a DeFi asset.','Each asset’s yearly probability of default.','Compare assets side by side, and against their Credora ratings.']};
+const SRC={app:'markets-search',deep:'deep.seer.pm',futarchy:'futarchy candles',opportunity:'market-chart',risk:'risk.seer.pm'};
+Object.entries(BRIEF).forEach(([v,[a,p,u]])=>{const sec=document.getElementById('v-'+v),head=sec.querySelector('.pagehead');
+  head.insertAdjacentHTML('afterend',`<div class="brief" aria-label="What this app is for"><div><span>Who asks</span><p>${a}</p></div><div><span>What is priced</span><p>${p}</p></div><div><span>How it is used</span><p>${u}</p></div></div>`);
+  const eb=head.querySelector('.eyebrow');eb.outerHTML=`<div class="eyerow">${eb.outerHTML}<span class="src ${v==='risk'?'stale':''}" title="Snapshot from Seer's API: ${SRC[v]}"><i></i>Real Seer data · 23 Oct, 07:56 UTC</span></div>`});
+
+function redraw(){renderMkts();renderDeep();drawHist();drawFut();renderOpp();renderRisk()}
+matchMedia('(prefers-color-scheme: light)').addEventListener('change',redraw);
+route();
+})();
+</script>
+</body></html>
