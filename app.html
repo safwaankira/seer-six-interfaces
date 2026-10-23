@@ -3,8 +3,8 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27%3E%3Crect width=%2724%27 height=%2724%27 rx=%276%27 fill=%27%237638FA%27/%3E%3Cpath fill=%27white%27 d=%27M10.5 4 6 12h4.2L8.6 20 18 10.8h-4.5L15.6 4z%27/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 </head><body style="margin:0">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: one header with a product switcher over six routed views; cards sit on the page, rows nest inside cards (EF kit's three surfaces). */
 :root{
@@ -176,6 +176,15 @@ tbody tr:hover td{background:var(--nest)}
 .side{position:sticky;top:120px;display:grid;gap:16px}
 
 .view{grid-template-columns:minmax(0,1fr)}.filters .seg{max-width:100%;overflow-x:auto;scrollbar-width:none}.filters .seg button{flex:none}
+.tip{position:fixed;z-index:75;pointer-events:none;min-width:150px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:8px;padding:8px 10px;display:grid;gap:3px;font-size:12px;color:var(--text-2)}
+.tip .v{font:600 15px var(--f-display);color:var(--text)}
+.tip .k{display:flex;align-items:center;gap:6px}.tip .k i{width:10px;height:2px;border-radius:1px;flex:none}
+.chart-wrap{overflow-x:auto}
+.chart-wrap svg{min-width:520px}
+.chart svg:focus-visible{outline:2px solid var(--primary);outline-offset:4px;border-radius:6px}
+.tblview summary{cursor:pointer;font-size:12px;color:var(--text-2);list-style:none}
+.tblview summary::-webkit-details-marker{display:none}
+.tblview table{min-width:0;font-size:12px}.tblview td,.tblview th{padding:6px 10px}
 /* deep */
 .deep-row{display:grid;grid-template-columns:34px minmax(0,1fr) 120px 70px 64px;gap:12px;align-items:center;padding:10px 12px;background:var(--nest);border-radius:8px}
 @media (max-width:640px){.deep-row{grid-template-columns:28px minmax(0,1fr) 60px}.deep-row .hide-sm{display:none}}
@@ -430,8 +439,8 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
           <div class="side-box"><span class="small">If not (NO_WETH)</span><b class="num">$2,401.23</b><span class="small">WETH price in USDS</span></div>
         </div>
         <div class="row" style="justify-content:space-between;flex-wrap:wrap;padding-block:10px"><span>Gap: <b class="num">−0.0004%</b>, inside the ±1% band. Markets see no effect on ETH either way.</span><span class="tag plain">Neutral</span></div>
-        <div class="legend"><span><i style="background:var(--primary)"></i>If scheduled</span><span><i style="background:var(--muted)"></i>If not</span><span><i style="background:var(--sec);height:8px"></i>±1% neutral band</span></div>
-        <div class="chart" id="futChart"></div>
+        <div style="display:grid;gap:6px"><h3>Gap between the branches vs. the ±1% decision band</h3><div class="legend"><span><i style="background:var(--primary);height:2px"></i>Gap: scheduled − not, % of WETH price</span><span><i style="background:var(--sec);height:8px"></i>Neutral band (±1%)</span></div></div>
+        <div class="chart chart-wrap" id="futChart"></div><details class="tblview"><summary>Show as table</summary><div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Day (UTC)</th><th class="r">If scheduled</th><th class="r">If not</th><th class="r">Gap</th></tr></thead><tbody id="futTbl"></tbody></table></div></details>
         <div><p class="small" style="margin-bottom:8px">Outcome tokens in this decision</p>
         <div class="tok-grid">
           <div class="row"><span class="mono grow">YES_WETH</span><span class="small">WETH if scheduled</span></div>
@@ -474,6 +483,7 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
   </div>
   <div class="warnbar"><svg width="16" height="16"><use href="#i-info"/></svg><span>Q3 trading ended 30 Sep. Prices were last updated 20 Aug, so treat these as the closing read of the round.</span></div>
   <div class="grid g3" id="riskSummary" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))"></div>
+  <div class="card card-pad" style="gap:10px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end"><div style="display:grid;gap:4px"><h3>Market PD vs. Credora rating</h3><p class="small">Each dot is one asset. Further right means the market prices more default risk. Log scale. Click a dot to add it to Compare.</p></div><div class="legend"><span><i style="background:var(--primary);width:8px;height:8px;border-radius:50%"></i>Asset</span><span><i style="background:var(--warn);width:8px;height:8px;border-radius:50%"></i>Market more cautious than rating</span><span><i style="background:var(--text);width:8px;height:8px;border-radius:50%"></i>In Compare</span></div></div><div class="chart chart-wrap" id="riskDots"></div></div>
   <div class="split">
     <div class="grid" style="gap:12px">
       <div class="filters" style="justify-content:space-between">
@@ -481,7 +491,7 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
         <div class="legend"><span><i style="background:var(--good)"></i>Under 0.5%</span><span><i style="background:var(--warn)"></i>0.5–3%</span><span><i style="background:var(--bad)"></i>Over 3%</span></div>
       </div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th style="width:36px"></th><th>Asset</th><th>Type (Credora)</th><th class="r">Yearly PD</th><th>Odds</th><th>PD on 0–16% scale</th><th>Credora</th><th></th></tr></thead>
+        <thead><tr><th style="width:36px"></th><th>Asset</th><th>Type (Credora)</th><th class="r">Yearly PD</th><th>Odds</th><th>PD, log scale</th><th>Credora</th><th></th></tr></thead>
         <tbody id="riskBody"></tbody>
       </table></div>
     </div>
@@ -571,7 +581,7 @@ const MKTS=[
  {t:'categorical',chain:'Gnosis',q:'Who will win the 2026 Brazilian presidential election?',px:{'Flávio Bolsonaro':.797,'Lula da Silva':.211,'Renan Santos':.003},st:'open',res:'2026-07-17',liq:151,vol:2139,addr:'0x95149fcc1eb9ec665a5984c33927b991dd66a355'},
  {t:'conditional',sub:'futarchy',chain:'Ethereum',q:'EIP-8363 futarchy: WETH price if scheduled vs. if not',parent:'Decision market, 4 conditional tokens',px:{'Scheduled':.30,'Not scheduled':.70},st:'open',res:'2026-10-24',liq:0,vol:1520000,addr:'0x0d78b95fca9f3e1b588271a330b0d6f731ec38aa',link:'#futarchy'}
 ];
-const TCOL={binary:'#3E7BFA',categorical:'#0FA37F',scalar:'#C98A1B',conditional:'#7638FA'};
+const TCOL={conditional:'#7638FA',binary:'#1E9BD7',scalar:'#C47A10',categorical:'#12A27A'}; /* validated: dark #1A1A1E + light #FFFFFF, CVD + normal-vision pass */
 const TICO={binary:'Y/N',categorical:'≡',scalar:'↕',conditional:'IF'};
 function mktCard(m){
   let body='';const qq=m.q.length>70?m.q.slice(0,68)+'…':m.q;
@@ -595,24 +605,38 @@ const sq=q=>q.length>44?q.slice(0,42)+'…':q;
 $('#liqFeed').innerHTML=[...MKTS].filter(m=>m.liq).sort((a,b)=>b.liq-a.liq).slice(0,5).map(m=>`<div class="feed-row"><span class="mkt-ico" style="width:28px;height:28px;font-size:10px;background:${TCOL[m.t]}" aria-hidden="true">${TICO[m.t]}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sq(m.q))}<br><span class="addr">${short(m.addr)}</span></span><span class="r num">${usd(m.liq)}</span></div>`).join('');
 $('#resFeed').innerHTML=[...MKTS].filter(m=>m.st==='not_open').sort((a,b)=>a.res.localeCompare(b.res)).map(m=>`<div class="feed-row"><span class="tag good">Trading</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sq(m.q))}</span><span class="r small">${nice(m.res)}</span></div>`).join('');
 
+
+/* shared tooltip: values lead, labels follow; textContent only */
+const tipEl=document.createElement('div');tipEl.className='tip';tipEl.hidden=true;tipEl.setAttribute('role','status');document.body.appendChild(tipEl);
+function tip(rows,x,y){tipEl.replaceChildren();rows.forEach(([v,k,col])=>{const r=document.createElement('div');if(k==null){r.className='v';r.textContent=v}else{r.className='k';if(col){const i=document.createElement('i');i.style.background=col;r.appendChild(i)}const a=document.createElement('span');a.textContent=k+' ';const b=document.createElement('b');b.textContent=v;b.style.color='var(--text)';r.append(a,b)}tipEl.appendChild(r)});
+  tipEl.hidden=false;const w=tipEl.offsetWidth,h=tipEl.offsetHeight;tipEl.style.left=Math.min(innerWidth-w-8,Math.max(8,x+14))+'px';tipEl.style.top=Math.max(8,y-h-12)+'px'}
+function untip(){tipEl.hidden=true}
+
 /* deep: Round 3 originality, top 20 of 98 */
 const DEEP=[['supranational/blst',.887],['status-im/nimbus-eth2',.8768],['herumi/mcl',.8763],['flashbots/mev-boost',.8701],['ethereum/py_ecc',.8499],['ethereum/consensus-specs',.8334],['libp2p/libp2p',.8324],['sigp/lighthouse',.8261],['ethers-io/ethers.js',.823],['openzeppelin/openzeppelin-contracts',.8203],['ethereum/eips',.7979],['consensys/teku',.7976],['arkworks-rs/algebra',.7954],['Consensys/gnark-crypto',.7948],['ethereum/go-ethereum',.7941],['chainsafe/lodestar',.7902],['nethereum/nethereum',.7892],['argotorg/solidity',.7812],['skalenetwork/libBLS',.7803],['Vectorized/solady',.7734]].map(([repo,up],i)=>({repo,up,score:up*100,rank:i+1}));
 let deepSort='score';
 function renderDeep(){const arr=[...DEEP].sort((a,b)=>deepSort==='score'?b.up-a.up:a.repo.toLowerCase().localeCompare(b.repo.toLowerCase()));
   $('#deepList').innerHTML=arr.map(d=>{const [org,name]=d.repo.split('/');return `<div class="deep-row"><span class="rank">${String(d.rank).padStart(2,'0')}</span><span style="min-width:0" class="repo"><div class="ttl"><a href="https://github.com/${esc(d.repo)}" target="_blank" rel="noopener">${esc(name)}</a></div><div class="who">${esc(org)}</div></span><span class="hide-sm"><div class="bar"><i style="width:${d.score}%"></i></div></span><b class="r num">${d.score.toFixed(1)}</b><span class="r num hide-sm small">${d.up.toFixed(3)}</span></div>`}).join('')}
 segBind('#deepSort','s',v=>{deepSort=v;renderDeep()});
-function drawHist(){const lo=76,hi=90,bins=Array(7).fill(0);DEEP.forEach(d=>bins[Math.min(6,Math.floor((d.score-lo)/2))]++);const W=300,H=130,pb=20,max=Math.max(...bins),bw=W/7;
-  $('#deepHist').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Expected originality scores of the top 20 repos">${bins.map((v,i)=>{const h=(H-pb-8)*v/max;return `<rect x="${i*bw+3}" y="${H-pb-h}" width="${bw-6}" height="${h}" rx="3" fill="${i>=5?css('--primary'):css('--nest-2')}"/>${v?`<text x="${i*bw+bw/2}" y="${H-pb-h-4}" text-anchor="middle">${v}</text>`:''}`}).join('')}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="${css('--line')}"/>${[76,80,84,88].map(v=>`<text x="${(v-lo)/2*bw+4}" y="${H-5}" text-anchor="start">${v}</text>`).join('')}</svg>`}
+function drawHist(){const lo=76,bins=Array(7).fill(0).map(()=>[]);DEEP.forEach(d=>bins[Math.min(6,Math.floor((d.score-lo)/2))].push(d));const W=300,H=140,pb=22,pt=16,max=Math.max(...bins.map(b=>b.length)),slot=W/7,bw=Math.min(24,slot-8);
+  const bar=(x,y,w,h)=>h<=0?'':`M${x},${y+h}V${y+4}Q${x},${y} ${x+4},${y}H${x+w-4}Q${x+w},${y} ${x+w},${y+4}V${y+h}Z`;
+  $('#deepHist').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="How many of the top 20 repos fall in each 2-point band of expected originality score">${[0,1,2,3,4,5,6].map(i=>{const v=bins[i].length,h=(H-pb-pt)*v/max,x=i*slot+(slot-bw)/2,y=H-pb-h;return `<g class="hb" data-i="${i}" tabindex="${v?0:-1}"><rect x="${i*slot}" y="${pt-6}" width="${slot}" height="${H-pb-pt+6}" fill="transparent"/><path d="${bar(x,y,bw,h)}" fill="${css('--primary')}"/>${v?`<text x="${x+bw/2}" y="${y-5}" text-anchor="middle">${v}</text>`:''}</g>`}).join('')}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="${css('--line')}"/>${[76,80,84,88].map(v=>`<text x="${(v-lo)/2*slot}" y="${H-6}" text-anchor="${v===76?'start':'middle'}">${v}</text>`).join('')}</svg>`;
+  $$('#deepHist .hb').forEach(g=>{const b=bins[+g.dataset.i],lab=(76+2*g.dataset.i)+'–'+(78+2*g.dataset.i);const show=e=>{if(!b.length)return;const r=g.getBoundingClientRect();tip([[b.length+(b.length>1?' repos':' repo')],[b.map(d=>d.repo.split('/')[1]).join(', '),'Score '+lab+':']],e.clientX||r.left+r.width/2,e.clientY||r.top)};g.onpointermove=show;g.onfocus=show;g.onpointerleave=untip;g.onblur=untip})}
 $('#deepExportBtn').onclick=()=>{const p=$('#deepExport'),open=p.hidden;p.hidden=!open;$('#deepExportBtn').setAttribute('aria-expanded',open);$('#deepExportBtn').textContent=open?'Hide agent export':'Show agent export';
   if(open)p.textContent=JSON.stringify({market:'Deep Funding Round 3 - Originality',chain:'optimism',collateral:'sUSDS',parent:'0x37ab5cbeee3a32289430e5d38b914ec7f580fd87',priced:'expected average jury originality score, 0-100 (UP price x 100)',use:'which repos funders read first; the jury still scores',resolution:'Reality.eth, Kleros Court on dispute',snapshot:'2026-10-23T07:56Z',top:DEEP.map(d=>({repo:d.repo,up:d.up,expected_score:+d.score.toFixed(1)}))},null,2)};
 
 /* futarchy: EIP-8363 daily closes, WETH in USDS */
 const FH=[['10-08',2475.56,2475.43],['10-09',2484.46,2484.33],['10-10',2498.9,2498.74],['10-12',2446.3,2446.22],['10-13',2498.89,2498.73],['10-14',2416.33,2416.31],['10-15',2440.34,2440.28],['10-16',2422.79,2422.76],['10-17',2398.85,2398.86],['10-18',2406.82,2406.81],['10-19',2407.25,2407.24],['10-20',2446.77,2446.7],['10-21',2472.33,2472.23],['10-22',2384.99,2385.02],['10-23',2401.22,2401.23]];
-function drawFut(){const W=640,H=230,l=50,r=12,t=10,b=26,n=FH.length;const mn=2340,mx=2540;
-  const X=i=>l+(W-l-r)*i/(n-1),Y=v=>t+(H-t-b)*(1-(v-mn)/(mx-mn));const path=k=>FH.map((d,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(d[k]).toFixed(1)).join('');
-  const band=FH.map((d,i)=>X(i).toFixed(1)+' '+Y(d[2]*1.01).toFixed(1)).join(' L')+' L'+[...FH].reverse().map((d,j)=>X(n-1-j).toFixed(1)+' '+Y(d[2]*0.99).toFixed(1)).join(' L');
-  const ticks=[2350,2400,2450,2500];const lab=[0,4,9,14];
-  $('#futChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="WETH price if EIP-8363 is scheduled versus if not, with the 1% neutral band">${ticks.map(v=>`<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css('--line')}"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end">$${v.toLocaleString('en-US')}</text>`).join('')}${lab.map((i,k)=>`<text x="${X(i)}" y="${H-6}" text-anchor="${k===0?'start':k===3?'end':'middle'}">${nice('2026-'+FH[i][0]).replace(' 2026','')}</text>`).join('')}<path d="M${band}Z" fill="${css('--sec')}" opacity=".9"/><path d="${path(2)}" fill="none" stroke="${css('--muted')}" stroke-width="4" stroke-linejoin="round"/><path d="${path(1)}" fill="none" stroke="${css('--primary')}" stroke-width="2" stroke-linejoin="round"/><circle cx="${X(n-1)}" cy="${Y(FH[n-1][1])}" r="4.5" fill="${css('--primary')}"/></svg><p class="small" style="margin-top:6px">Daily closes, 8–23 Oct. No trades on 11 Oct; 23 Oct is partial. The two lines overlap because the branches price ETH almost identically.</p>`}
+function drawFut(){const W=640,H=230,l=52,r=86,t=14,b=26,n=FH.length,mn=-1.6,mx=1.6;const G=FH.map(d=>(d[1]-d[2])/d[2]*100);
+  const X=i=>l+(W-l-r)*i/(n-1),Y=v=>t+(H-t-b)*(1-(v-mn)/(mx-mn));const line=G.map((g,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(g).toFixed(1)).join('');
+  const lab=[0,4,9,14],last=G[n-1],fmt=g=>(g>=0?'+':'−')+Math.abs(g).toFixed(4)+'%';
+  $('#futChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" tabindex="0" aria-label="Gap between the scheduled and not-scheduled WETH price, 8 to 23 October, staying inside the plus or minus 1 percent neutral band. Use arrow keys to step through days."><rect x="${l}" y="${Y(1)}" width="${W-l-r}" height="${Y(-1)-Y(1)}" fill="${css('--sec')}"/>${[-1,0,1].map(v=>`<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css('--line')}"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end">${v>0?'+':v<0?'−':''}${Math.abs(v)}%</text>`).join('')}<text x="${W-r+10}" y="${Y(1.3)+4}">Include</text><text x="${W-r+10}" y="${Y(0)+4}" fill="${css('--sec-text')}" style="fill:var(--sec-text)">Neutral</text><text x="${W-r+10}" y="${Y(-1.3)+4}">Exclude</text>${lab.map((i,k)=>`<text x="${X(i)}" y="${H-6}" text-anchor="${k===0?'start':k===3?'end':'middle'}">${nice('2026-'+FH[i][0]).replace(' 2026','')}</text>`).join('')}<path d="${line}" fill="none" stroke="${css('--primary')}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(n-1)}" cy="${Y(last)}" r="4" fill="${css('--primary')}" stroke="${css('--card')}" stroke-width="2"/><line id="futX" x1="0" x2="0" y1="${t}" y2="${H-b}" stroke="${css('--text-2')}" stroke-width="1" visibility="hidden"/><rect id="futHit" x="${l}" y="${t}" width="${W-l-r}" height="${H-t-b}" fill="transparent"/></svg><p class="small" style="margin-top:6px">Daily closes, 8–23 Oct (no trades on 11 Oct; 23 Oct partial). The gap never left ±0.01%, far inside the band: markets expect no effect on ETH either way. Latest ${fmt(last)}.</p>`;
+  const svg=$('#futChart svg'),xl=$('#futX');let cur=n-1;
+  const at=(i,cx,cy)=>{cur=i;const sx=svg.getBoundingClientRect().width/W;xl.setAttribute('x1',X(i));xl.setAttribute('x2',X(i));xl.setAttribute('visibility','visible');const d=FH[i];tip([[fmt(G[i])],[nice('2026-'+d[0]),'Day'],['$'+d[1].toLocaleString('en-US',{minimumFractionDigits:2}),'If scheduled',css('--primary')],['$'+d[2].toLocaleString('en-US',{minimumFractionDigits:2}),'If not',css('--muted')]],cx??svg.getBoundingClientRect().left+X(i)*sx,cy??svg.getBoundingClientRect().top+Y(G[i])*sx)};
+  $('#futHit').onpointermove=e=>{const bx=svg.getBoundingClientRect(),sx=bx.width/W,px=(e.clientX-bx.left)/sx;at(Math.max(0,Math.min(n-1,Math.round((px-l)/(W-l-r)*(n-1)))),e.clientX,e.clientY)};
+  const off=()=>{xl.setAttribute('visibility','hidden');untip()};$('#futHit').onpointerleave=off;svg.onblur=off;svg.onfocus=()=>at(cur);
+  svg.onkeydown=e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();at(Math.max(0,Math.min(n-1,cur+(e.key==='ArrowRight'?1:-1))))}};
+  $('#futTbl').innerHTML=FH.map((d,i)=>`<tr><td>${nice('2026-'+d[0])}</td><td class="r num">$${d[1].toLocaleString('en-US',{minimumFractionDigits:2})}</td><td class="r num">$${d[2].toLocaleString('en-US',{minimumFractionDigits:2})}</td><td class="r num">${fmt(G[i])}</td></tr>`).join('')}
 const PL=[['GIP-153','Move Gnosis Chain into the Ethereum Economic Zone','GNO $90.08 vs $90.34','Snapshot passed','good'],['GIP-152','Spin out the Gnosis App as a company','GNO $84.77 vs $84.77','Snapshot passed · pools empty','plain']];
 $('#propList').innerHTML=PL.map(p=>`<div class="row" style="padding-block:10px;align-items:flex-start;flex-direction:column;gap:4px"><span class="mono small">${p[0]}</span><span>${p[1]}</span><span style="display:flex;width:100%;justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="small num">${p[2]}</span><span class="tag ${p[4]}">${p[3]}</span></span></div>`).join('')+'<p class="small">Pass vs. fail prices are GNO in sDAI. Onchain resolution not yet confirmed.</p>';
 
@@ -631,11 +655,20 @@ const cautious=r=>r.cr&&r.cr[0]==='A'&&r.pd>1.5;
 let rCat='all',sel=new Set(['USDC','USDS','avUSD']);
 function renderRisk(){
   const rows=RISK.filter(r=>rCat==='all'||(r.ty||'').startsWith(rCat));
-  $('#riskBody').innerHTML=rows.map(r=>{const t=tier(r.pd),on=sel.has(r.a);return `<tr class="${on?'sel':''}" data-a="${esc(r.a)}" style="cursor:pointer"><td><span class="check ${on?'on':''}" role="checkbox" aria-checked="${on}" aria-label="Compare ${esc(r.a)}" tabindex="0"></span></td><td><b style="font-weight:500">${esc(r.a)}</b>${cautious(r)?'<br><span class="flag">Market more cautious than rating</span>':''}</td><td><span class="small">${esc(r.ty||'No Credora data')}</span></td><td class="r"><span class="pd num" style="color:var(--${t})">${r.pd.toFixed(r.pd<1?2:1)}%</span></td><td class="small num">${oneIn(r.pd)}</td><td><div class="pdbar"><i style="width:${Math.max(2,r.pd/16*100)}%;background:var(--${t})"></i></div></td><td>${crTag(r.cr)}</td><td><button class="chip chip-no" data-trade="${tj({q:r.a+' yearly PD, Q3 2026',a:'Higher',b:'Lower',pa:.5,pb:.5})}">Estimate</button></td></tr>`}).join('');
+  $('#riskBody').innerHTML=rows.map(r=>{const t=tier(r.pd),on=sel.has(r.a);return `<tr class="${on?'sel':''}" data-a="${esc(r.a)}" style="cursor:pointer"><td><span class="check ${on?'on':''}" role="checkbox" aria-checked="${on}" aria-label="Compare ${esc(r.a)}" tabindex="0"></span></td><td><b style="font-weight:500">${esc(r.a)}</b>${cautious(r)?'<br><span class="flag">Market more cautious than rating</span>':''}</td><td><span class="small">${esc(r.ty||'No Credora data')}</span></td><td class="r"><span class="pd num" style="color:var(--${t})">${r.pd.toFixed(r.pd<1?2:1)}%</span></td><td class="small num">${oneIn(r.pd)}</td><td><div class="pdbar"><i style="width:${logW(r.pd)}%;background:var(--${t})"></i></div></td><td>${crTag(r.cr)}</td><td><button class="chip chip-no" data-trade="${tj({q:r.a+' yearly PD, Q3 2026',a:'Higher',b:'Lower',pa:.5,pb:.5})}">Estimate</button></td></tr>`}).join('');
   const s=[...sel].map(n=>RISK.find(r=>r.a===n)).filter(Boolean);
   $('#cmpBars').innerHTML=s.length?s.map(r=>`<div class="cmp-item"><div class="top"><span style="font-weight:500">${esc(r.a)}</span><b class="num" style="color:var(--${tier(r.pd)})">${r.pd.toFixed(r.pd<1?2:1)}%</b></div><div class="cmp-track"><i style="width:${Math.max(2,Math.min(100,r.pd/16*100))}%;background:var(--${tier(r.pd)})"></i></div><span class="small">${oneIn(r.pd)} chance of default within a year · Credora ${r.cr||'not rated'}</span></div>`).join(''):'<p class="sub">Tick up to three assets in the table to compare them here.</p>';
   const sorted=[...RISK].sort((a,b)=>a.pd-b.pd),lo=sorted[0],hi=sorted.at(-1),med=sorted[16];
-  $('#riskSummary').innerHTML=`<div class="card card-pad"><span class="small">Lowest priced risk</span><b class="pd num" style="font-size:22px;color:var(--good)">${lo.pd.toFixed(3)}%</b><span class="sub">${lo.a} · ${oneIn(lo.pd)}</span></div><div class="card card-pad"><span class="small">Median of 33 assets</span><b class="pd num" style="font-size:22px;color:var(--warn)">${med.pd.toFixed(2)}%</b><span class="sub">${med.a}</span></div><div class="card card-pad"><span class="small">Highest priced risk</span><b class="pd num" style="font-size:22px;color:var(--bad)">${hi.pd.toFixed(1)}%</b><span class="sub">${hi.a} · ${oneIn(hi.pd)}</span></div><div class="card card-pad"><span class="small">Chance none of the 33 default</span><b class="pd num" style="font-size:22px">46.5%</b><span class="sub">The market's “No to All” outcome</span></div>`}
+  $('#riskSummary').innerHTML=`<div class="card card-pad"><span class="small">Lowest priced risk</span><b class="pd num" style="font-size:22px;color:var(--good)">${lo.pd.toFixed(3)}%</b><span class="sub">${lo.a} · ${oneIn(lo.pd)}</span></div><div class="card card-pad"><span class="small">Median of 33 assets</span><b class="pd num" style="font-size:22px;color:var(--warn)">${med.pd.toFixed(2)}%</b><span class="sub">${med.a}</span></div><div class="card card-pad"><span class="small">Highest priced risk</span><b class="pd num" style="font-size:22px;color:var(--bad)">${hi.pd.toFixed(1)}%</b><span class="sub">${hi.a} · ${oneIn(hi.pd)}</span></div><div class="card card-pad"><span class="small">Chance none of the 33 default</span><b class="pd num" style="font-size:22px">46.5%</b><span class="sub">The market's “No to All” outcome</span></div>`;drawRiskDots()}
+
+const LMIN=Math.log10(0.02),LMAX=Math.log10(20);const logW=pd=>Math.max(3,(Math.log10(pd)-LMIN)/(LMAX-LMIN)*100).toFixed(1);
+const GRADES=['A+','A','A-','B+','B','B-','C','C-','D','Not rated'];
+function drawRiskDots(){const W=760,rowH=24,t=8,l=74,r=20,b=26,H=t+GRADES.length*rowH+b;const X=pd=>l+(W-l-r)*(Math.log10(pd)-LMIN)/(LMAX-LMIN),Y=g=>t+GRADES.indexOf(g)*rowH+rowH/2;
+  const ticks=[0.03,0.1,0.3,1,3,10];const byG={};RISK.forEach(d=>{const g=d.cr||'Not rated';(byG[g]=byG[g]||[]).push(d)});
+  const pts=[];GRADES.forEach(g=>{(byG[g]||[]).sort((a,b)=>a.pd-b.pd).forEach((d,k,arr)=>{let y=Y(g);const prev=pts.filter(p=>p.g===g&&Math.abs(p.x-X(d.pd))<9);if(prev.length)y+=prev.length%2?-6:6;pts.push({d,g,x:X(d.pd),y})})});
+  $('#riskDots').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dot plot of 33 assets: market-implied yearly default probability on a log scale, grouped by Credora rating">${ticks.map(v=>`<line x1="${X(v)}" x2="${X(v)}" y1="${t}" y2="${H-b}" stroke="${css('--line')}"/><text x="${X(v)}" y="${H-6}" text-anchor="middle">${v}%</text>`).join('')}${GRADES.map(g=>`<text x="${l-12}" y="${Y(g)+4}" text-anchor="end">${g}</text>`).join('')}${pts.map((p,i)=>{const on=sel.has(p.d.a),fill=on?css('--text'):cautious(p.d)?css('--warn'):css('--primary');return `<g class="rd" data-i="${i}" tabindex="0" role="button" aria-label="${esc(p.d.a)}: ${p.d.pd}% yearly PD, Credora ${p.g}"><circle cx="${p.x}" cy="${p.y}" r="12" fill="transparent"/><circle cx="${p.x}" cy="${p.y}" r="${on?5.5:4.5}" fill="${fill}" stroke="${css('--card')}" stroke-width="2"/></g>`}).join('')}${(p=>`<text x="${p.x-10}" y="${p.y-9}" text-anchor="end" style="fill:var(--text-2)">USDF, highest</text>`)(pts.find(q=>q.d.a==='USDF'))}</svg>`;
+  $$('#riskDots .rd').forEach(g=>{const p=pts[+g.dataset.i];const show=e=>{const r=g.getBoundingClientRect();tip([[p.d.pd.toFixed(p.d.pd<1?2:1)+'%'],[p.d.a,'Asset'],[oneIn(p.d.pd),'Odds'],[p.g,'Credora']],e.clientX||r.left+r.width/2,e.clientY||r.top)};
+    g.onpointermove=show;g.onfocus=show;g.onpointerleave=untip;g.onblur=untip;g.onclick=()=>{untip();toggleSel(p.d.a)};g.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggleSel(p.d.a)}}})}
 function toggleSel(a){if(sel.has(a))sel.delete(a);else{if(sel.size>=3){toast('Compare up to three assets at a time');return}sel.add(a)}renderRisk()}
 $('#riskBody').addEventListener('click',e=>{if(e.target.closest('[data-trade]'))return;const tr=e.target.closest('tr');if(tr)toggleSel(tr.dataset.a)});
 $('#riskBody').addEventListener('keydown',e=>{if((e.key===' '||e.key==='Enter')&&e.target.classList.contains('check')){e.preventDefault();toggleSel(e.target.closest('tr').dataset.a)}});
@@ -659,4 +692,5 @@ matchMedia('(prefers-color-scheme: light)').addEventListener('change',redraw);
 route();
 })();
 </script>
+
 </body></html>
