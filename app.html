@@ -185,6 +185,15 @@ tbody tr:hover td{background:var(--nest)}
 .tblview summary{cursor:pointer;font-size:12px;color:var(--text-2);list-style:none}
 .tblview summary::-webkit-details-marker{display:none}
 .tblview table{min-width:0;font-size:12px}.tblview td,.tblview th{padding:6px 10px}
+.dscrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:78}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:79;width:min(440px,100%);background:var(--card);box-shadow:var(--shadow);padding:calc(20px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) 20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+.tl{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.tl li{display:grid;grid-template-columns:18px minmax(0,1fr);gap:10px;padding-bottom:12px;position:relative}
+.tl li::before{content:"";width:10px;height:10px;border-radius:50%;margin-top:4px;background:var(--nest-2);box-shadow:0 0 0 2px var(--card)}
+.tl li:not(:last-child)::after{content:"";position:absolute;left:4.5px;top:16px;bottom:0;width:1px;background:var(--line)}
+.tl li.done::before{background:var(--primary)}.tl li.now::before{background:var(--warn)}
+.tl b{font-weight:500;color:var(--text)}.tl span{font-size:12px;color:var(--muted);display:block}
+.mkt-title p{cursor:pointer}.mkt-title p:hover{text-decoration:underline}
 /* deep */
 .deep-row{display:grid;grid-template-columns:34px minmax(0,1fr) 120px 70px 64px;gap:12px;align-items:center;padding:10px 12px;background:var(--nest);border-radius:8px}
 @media (max-width:640px){.deep-row{grid-template-columns:28px minmax(0,1fr) 60px}.deep-row .hide-sm{display:none}}
@@ -429,16 +438,16 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
 <section class="view" id="v-futarchy" data-view="futarchy" hidden>
   <div class="pagehead">
     <div class="titles"><span class="eyebrow">Futarchy · Ethereum</span><h2>EIP-8363: Tapered Issuance Burn, scheduled for Hegotá?</h2><p class="sub">Success measure: WETH price in USDS, 5-day TWAP. Include if the pass branch beats fail by more than 1%, exclude if fail wins by more than 1%, otherwise neutral.</p></div>
-    <div class="statline"><div class="stat"><b class="num">30%</b><span>Chance it's scheduled</span></div><div class="stat"><b class="num">~1.52M</b><span>USDS volume per side</span></div><div class="stat"><b>24 Oct</b><span>00:00 UTC close</span></div></div>
+    <div class="statline"><div class="stat"><b class="num">30%</b><span>Chance it's scheduled</span></div><div class="stat"><b class="num">~1.52M</b><span>USDS volume per side</span></div><div class="stat"><b>24 Oct</b><span id="fCloseLbl">00:00 UTC close</span></div></div>
   </div>
   <div class="split">
     <div class="grid" style="gap:16px">
       <div class="card card-pad" style="gap:16px">
         <div class="cond">
-          <div class="side-box"><span class="small">If scheduled (YES_WETH)</span><b class="num">$2,401.22</b><span class="small">WETH price in USDS</span></div>
-          <div class="side-box"><span class="small">If not (NO_WETH)</span><b class="num">$2,401.23</b><span class="small">WETH price in USDS</span></div>
+          <div class="side-box"><span class="small">If scheduled (YES_WETH)</span><b class="num" id="fYes">$2,401.22</b><span class="small">WETH price in USDS</span></div>
+          <div class="side-box"><span class="small">If not (NO_WETH)</span><b class="num" id="fNo">$2,401.23</b><span class="small">WETH price in USDS</span></div>
         </div>
-        <div class="row" style="justify-content:space-between;flex-wrap:wrap;padding-block:10px"><span>Gap: <b class="num">−0.0004%</b>, inside the ±1% band. Markets see no effect on ETH either way.</span><span class="tag plain">Neutral</span></div>
+        <div class="row" style="justify-content:space-between;flex-wrap:wrap;padding-block:10px"><span id="fGapTxt">Gap: <b class="num">−0.0004%</b>, inside the ±1% band. Markets see no effect on ETH either way.</span><span class="tag plain" id="fGapTag">Neutral</span></div>
         <div style="display:grid;gap:6px"><h3>Gap between the branches vs. the ±1% decision band</h3><div class="legend"><span><i style="background:var(--primary);height:2px"></i>Gap: scheduled − not, % of WETH price</span><span><i style="background:var(--sec);height:8px"></i>Neutral band (±1%)</span></div></div>
         <div class="chart chart-wrap" id="futChart"></div><details class="tblview"><summary>Show as table</summary><div class="tbl-wrap" style="margin-top:8px"><table><thead><tr><th>Day (UTC)</th><th class="r">If scheduled</th><th class="r">If not</th><th class="r">Gap</th></tr></thead><tbody id="futTbl"></tbody></table></div></details>
         <div><p class="small" style="margin-bottom:8px">Outcome tokens in this decision</p>
@@ -481,7 +490,7 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
     <div class="titles"><span class="eyebrow">Risk Pricing</span><h2>Market-priced default risk across DeFi</h2><p class="sub">Each number is the market's estimate of an asset's yearly Probability of Default (PD), next to its Credora rating. Select up to three assets to compare.</p></div>
     <div class="tabs" role="group" aria-label="Quarter"><button class="tab" aria-pressed="true">Q3 2026</button><button class="tab" aria-pressed="false" data-toast="Q4 2026 markets are coming soon">Q4 2026 · soon</button></div>
   </div>
-  <div class="warnbar"><svg width="16" height="16"><use href="#i-info"/></svg><span>Q3 trading ended 30 Sep. Prices were last updated 20 Aug, so treat these as the closing read of the round.</span></div>
+  <div class="warnbar"><svg width="16" height="16"><use href="#i-info"/></svg><span>Q3 trading ended 30 Sep. Prices were last updated <span id="riskUpd">20 Aug</span>, so treat these as the closing read of the round.</span></div>
   <div class="grid g3" id="riskSummary" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))"></div>
   <div class="card card-pad" style="gap:10px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end"><div style="display:grid;gap:4px"><h3>Market PD vs. Credora rating</h3><p class="small">Each dot is one asset. Further right means the market prices more default risk. Log scale. Click a dot to add it to Compare.</p></div><div class="legend"><span><i style="background:var(--primary);width:8px;height:8px;border-radius:50%"></i>Asset</span><span><i style="background:var(--warn);width:8px;height:8px;border-radius:50%"></i>Market more cautious than rating</span><span><i style="background:var(--text);width:8px;height:8px;border-radius:50%"></i>In Compare</span></div></div><div class="chart chart-wrap" id="riskDots"></div></div>
   <div class="split">
@@ -509,7 +518,7 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
 
 <footer class="sitefoot" style="display:grid;gap:12px">
   <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between"><span>Seer · information finance on Conditional Tokens, Reality.eth and Kleros</span><span>Redesign concept on the Electric Foundation kit</span></div>
-  <div class="sources"><span>Data snapshot 23 Oct 2026 07:56 UTC from Seer's own endpoints:</span><span>risk.seer.pm/api/v1/risk-pricing · risk.seer.pm/api/credora</span><span>app.seer.pm/.netlify/functions/markets-search · market-chart</span><span>api.futarchy.seer.pm/registry/graphql · candles/graphql</span><span>deep.seer.pm originality round 3 markets data</span></div>
+  <div class="sources"><span>Live on page load where Seer's API allows browsers (Seer app, Risk Pricing, Futarchy); Deep and Opportunity use a 23 Oct 2026 07:56 UTC snapshot. Each page's badge says which. Endpoints:</span><span>risk.seer.pm/api/v1/risk-pricing · risk.seer.pm/api/credora</span><span>app.seer.pm/.netlify/functions/markets-search · market-chart</span><span>api.futarchy.seer.pm/registry/graphql · candles/graphql</span><span>deep.seer.pm originality round 3 markets data</span></div>
 </footer>
 </main>
 
@@ -524,6 +533,15 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
   </div>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
+<div class="dscrim" id="dscrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dQ" hidden>
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><div style="display:grid;gap:6px"><div class="eyerow" id="dTags"></div><h3 id="dQ"></h3><p class="small" id="dParent"></p></div><button class="icon-btn" id="dClose" aria-label="Close details" style="width:32px;height:32px;flex:none"><svg width="16" height="16"><use href="#i-x"/></svg></button></div>
+  <div id="dOutcomes" class="grid" style="gap:6px"></div>
+  <div class="statline" id="dStats"></div>
+  <div style="display:grid;gap:8px"><h3 style="font-size:14px">Resolution path</h3><ol class="tl" id="dTl"></ol></div>
+  <div class="row" style="justify-content:space-between;flex-wrap:wrap;padding-block:8px"><span class="addr" id="dAddr" style="overflow-wrap:anywhere;color:var(--text-2)"></span><button class="chip chip-no" id="dCopy">Copy address</button></div>
+  <a class="big-btn btn-primary" id="dOpen" target="_blank" rel="noopener" style="text-decoration:none;flex:none">Open in Seer app</a>
+</aside>
 
 <script>
 (function(){
@@ -568,7 +586,7 @@ $('#confirm').onclick=()=>{close();toast('Demo ticket: no transaction was sent')
 document.addEventListener('click',e=>{const b=e.target.closest('[data-trade]');if(b)openTrade(JSON.parse(b.dataset.trade))});
 
 /* ---------- real Seer data, snapshot 2026-10-23 07:56 UTC ---------- */
-const MKTS=[
+let MKTS=[
  {t:'categorical',chain:'Gnosis',q:'Which party or joint electoral list will win the most seats in the 2026 Israeli Knesset election?',px:{'Yashar':.66,'Likud':.322,'Others':.007},st:'open',res:'2026-07-17',liq:27585,vol:6401,addr:'0x31cb54c49479243333594eb7343d31f6bd1ddfd3'},
  {t:'conditional',sub:'binary',chain:'Gnosis',q:'Will the National Rally’s candidate win the next French presidential election?',parent:'If Marine Le Pen is the candidate (Yes 84%)',px:{'Yes':.377,'No':.745},st:'open',res:'2025-04-07',liq:7581,vol:11806,addr:'0xbbf8f7e40a9234d965f59802c1b3720b21bcc32e'},
  {t:'binary',chain:'Gnosis',q:'Will any Kurdish militant group launch a confirmed armed attack inside Iran in 2026?',px:{'Yes':.091,'No':.91},st:'not_open',res:'2027-01-01',liq:1120,vol:726,addr:'0xc57764377e06fa317457a123b2c25f031c088e17'},
@@ -591,8 +609,22 @@ function mktCard(m){
     else body=ent.map(([n,p])=>`<div class="row"><span class="grow">${esc(n)}</span><b class="num">${pct(p)}</b>${m.link?'':`<button class="chip chip-yes" data-trade="${tj({q:qq+': '+n,a:'Yes',b:'No',pa:p,pb:+(1-p).toFixed(3)})}">Yes</button><button class="chip chip-no" data-trade="${tj({q:qq+': '+n,a:'No',b:'Yes',pa:+(1-p).toFixed(3),pb:p})}">No</button>`}</div>`).join('')}
   const stTag=m.st==='open'?'<span class="tag warn st-tag">Answer window open</span>':'<span class="tag good st-tag">Trading</span>';
   const href=m.link||`https://app.seer.pm/markets/${m.chain==='Ethereum'?1:100}/${m.addr}`;
-  return `<article class="card"><div class="mkt-title"><span class="mkt-ico" style="background:${TCOL[m.t]}" aria-hidden="true">${TICO[m.t]}</span><p>${esc(m.q)}</p></div>${m.parent?`<div class="small" style="padding:0 2px">↳ ${esc(m.parent)}</div>`:''}${body}<div class="oracle"><i></i>Reality.eth answer · Kleros Court on dispute</div><div class="foot"><span>${m.liq?usd(m.liq)+' liq.':''}${m.liq?' · ':''}${usd(m.vol)} vol.</span><span class="sp"></span><span class="tag plain">${m.t[0].toUpperCase()+m.t.slice(1)}${m.sub?' · '+m.sub:''}</span></div><div class="foot" style="padding-top:0"><span class="addr">${m.chain} · ${short(m.addr)}</span><span class="sp"></span>${stTag}<a class="small" href="${href}" ${m.link?'':'target="_blank" rel="noopener"'}>Open</a></div></article>`;
+  return `<article class="card"><div class="mkt-title"><span class="mkt-ico" style="background:${TCOL[m.t]}" aria-hidden="true">${TICO[m.t]}</span><p role="button" tabindex="0" data-detail="${esc(m.addr)}">${esc(m.q)}</p></div>${m.parent?`<div class="small" style="padding:0 2px">↳ ${esc(m.parent)}</div>`:''}${body}<div class="oracle"><i></i>Reality.eth answer · Kleros Court on dispute</div><div class="foot"><span>${m.liq?usd(m.liq)+' liq.':''}${m.liq?' · ':''}${usd(m.vol)} vol.</span><span class="sp"></span><span class="tag plain">${m.t[0].toUpperCase()+m.t.slice(1)}${m.sub?' · '+m.sub:''}</span></div><div class="foot" style="padding-top:0"><span class="addr">${m.chain} · ${short(m.addr)}</span><span class="sp"></span>${stTag}${m.link?`<a class="small" href="${href}">Open</a>`:`<button class="small" data-detail="${esc(m.addr)}" style="text-decoration:underline">Details</button>`}</div></article>`;
 }
+function openDetail(addr){const m=MKTS.find(x=>x.addr===addr);if(!m)return;
+  $('#dTags').innerHTML=`<span class="tag plain">${m.t[0].toUpperCase()+m.t.slice(1)}${m.sub?' · '+m.sub:''}</span><span class="tag plain">${m.chain}</span>${m.st==='open'?'<span class="tag warn">Answer window open</span>':'<span class="tag good">Trading</span>'}`;
+  $('#dQ').textContent=m.q;$('#dParent').textContent=m.parent?'Conditional on: '+m.parent:'';
+  if(m.range){const pos=(m.est-m.range[0])/(m.range[1]-m.range[0]);$('#dOutcomes').innerHTML=`<div class="scalar"><div style="display:flex;justify-content:space-between"><span class="small">Market estimate</span><b class="num">${m.est} ${esc(m.unit)}</b></div><div class="scalar-track"><i style="left:${(pos*100).toFixed(1)}%"></i></div><div class="scalar-lbl"><span>${m.range[0]}</span><span>${m.range[1]}</span></div></div><div class="row"><span class="grow">UP token</span><b class="num">${m.up.toFixed(3)}</b></div><div class="row"><span class="grow">DOWN token</span><b class="num">${(1-m.up).toFixed(3)}</b></div>`}
+  else{const mx=Math.max(...Object.values(m.px));$('#dOutcomes').innerHTML=Object.entries(m.px).map(([n,p])=>`<div class="row" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding-block:8px"><span>${esc(n)}</span><b class="num">${pct(p)}</b><div class="bar" style="grid-column:1/-1"><i style="width:${p/mx*100}%"></i></div></div>`).join('')+'<p class="small">Pool-implied odds; they may not add up to 100%.</p>'}
+  $('#dStats').innerHTML=`${m.liq?`<div class="stat"><b class="num">${usd(m.liq)}</b><span>Liquidity</span></div>`:''}<div class="stat"><b class="num">${usd(m.vol)}</b><span>Volume</span></div>`;
+  const opened=m.st==='open';$('#dTl').innerHTML=[['Trading','Outcome tokens trade on any DEX','done'],[(opened?'Answer window opened ':'Answer window opens ')+nice(m.res),'Reality.eth starts taking answers',opened?'now':''],['Answer posted with a bond','Anyone can challenge by doubling the bond',''],['Kleros Court, if disputed','Jurors rule on contested answers',''],['Redeem','Winning tokens redeem for collateral; Invalid splits it back','']].map(([a,b,c])=>`<li class="${c}"><div><b>${a}</b><span>${b}</span></div></li>`).join('');
+  $('#dAddr').textContent=m.addr;$('#dOpen').href=m.link||`https://app.seer.pm/markets/${m.chain==='Ethereum'?1:100}/${m.addr}`;
+  $('#drawer').hidden=false;$('#dscrim').hidden=false;$('#dClose').focus()}
+function closeDetail(){$('#drawer').hidden=true;$('#dscrim').hidden=true}
+document.addEventListener('click',e=>{const d=e.target.closest('[data-detail]');if(d)openDetail(d.dataset.detail)});
+document.addEventListener('keydown',e=>{const d=e.target.closest&&e.target.closest('p[data-detail]');if(d&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openDetail(d.dataset.detail)}if(e.key==='Escape')closeDetail()});
+$('#dClose').onclick=closeDetail;$('#dscrim').onclick=closeDetail;
+$('#dCopy').onclick=()=>{const a=$('#dAddr').textContent;const done=()=>toast('Address copied');if(navigator.clipboard)navigator.clipboard.writeText(a).then(done,()=>{getSelection().selectAllChildren($('#dAddr'));toast('Press Ctrl/Cmd+C to copy')});else{getSelection().selectAllChildren($('#dAddr'))}};
 let fType='all',fChain='all';
 function renderMkts(){const q=($('#q').value||'').toLowerCase().trim();const list=MKTS.filter(m=>(fType==='all'||m.t===fType)&&(fChain==='all'||m.chain===fChain)&&(!q||m.q.toLowerCase().includes(q)||m.addr.toLowerCase().includes(q)));
   $('#mktGrid').innerHTML=list.map(mktCard).join('')||'<div class="card card-pad"><h3>No markets match</h3><p class="sub">Clear the search or pick another market type or chain.</p></div>';
@@ -626,7 +658,7 @@ $('#deepExportBtn').onclick=()=>{const p=$('#deepExport'),open=p.hidden;p.hidden
   if(open)p.textContent=JSON.stringify({market:'Deep Funding Round 3 - Originality',chain:'optimism',collateral:'sUSDS',parent:'0x37ab5cbeee3a32289430e5d38b914ec7f580fd87',priced:'expected average jury originality score, 0-100 (UP price x 100)',use:'which repos funders read first; the jury still scores',resolution:'Reality.eth, Kleros Court on dispute',snapshot:'2026-10-23T07:56Z',top:DEEP.map(d=>({repo:d.repo,up:d.up,expected_score:+d.score.toFixed(1)}))},null,2)};
 
 /* futarchy: EIP-8363 daily closes, WETH in USDS */
-const FH=[['10-08',2475.56,2475.43],['10-09',2484.46,2484.33],['10-10',2498.9,2498.74],['10-12',2446.3,2446.22],['10-13',2498.89,2498.73],['10-14',2416.33,2416.31],['10-15',2440.34,2440.28],['10-16',2422.79,2422.76],['10-17',2398.85,2398.86],['10-18',2406.82,2406.81],['10-19',2407.25,2407.24],['10-20',2446.77,2446.7],['10-21',2472.33,2472.23],['10-22',2384.99,2385.02],['10-23',2401.22,2401.23]];
+let FH=[['10-08',2475.56,2475.43],['10-09',2484.46,2484.33],['10-10',2498.9,2498.74],['10-12',2446.3,2446.22],['10-13',2498.89,2498.73],['10-14',2416.33,2416.31],['10-15',2440.34,2440.28],['10-16',2422.79,2422.76],['10-17',2398.85,2398.86],['10-18',2406.82,2406.81],['10-19',2407.25,2407.24],['10-20',2446.77,2446.7],['10-21',2472.33,2472.23],['10-22',2384.99,2385.02],['10-23',2401.22,2401.23]];
 function drawFut(){const W=640,H=230,l=52,r=86,t=14,b=26,n=FH.length,mn=-1.6,mx=1.6;const G=FH.map(d=>(d[1]-d[2])/d[2]*100);
   const X=i=>l+(W-l-r)*i/(n-1),Y=v=>t+(H-t-b)*(1-(v-mn)/(mx-mn));const line=G.map((g,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(g).toFixed(1)).join('');
   const lab=[0,4,9,14],last=G[n-1],fmt=g=>(g>=0?'+':'−')+Math.abs(g).toFixed(4)+'%';
@@ -647,7 +679,8 @@ function renderOpp(){const max=OPP[0][1];$('#oppList').innerHTML=OPP.map(([n,p],
   $('#receipt').innerHTML=REB.map(([n,p],i)=>`<div class="row ${i===0?'won':''}"><span class="grow">${esc(n)}</span>${i===0?'<span class="tag good">Chosen</span>':''}<b class="num">${pct(p,1)}</b></div>`).join('')}
 
 /* risk: Q3 2026, 33 assets */
-const RISK=[['USDF',15.803,'C-','Stablecoin - Active Strategy'],['avETH',12.577,'B-','Stablecoin - Active Strategy'],['avUSD',9.709,'B-','Stablecoin - Active Strategy'],['NUSD',7.115,'D','Stablecoin - Active Strategy'],['RUSD',5.509,'C','Stablecoin - Active Strategy'],['iUSD',3.023,'B-','Stablecoin - Active Strategy'],['satUSD+',2.432,'C','Stablecoin - Alternative Assets'],['U',2.331,'B-','Stablecoin - RWA Backed'],['solvBTC',2.274,'B','Derivative - Centralized Custody'],['USDO',2.072,'A-','Stablecoin - RWA Backed'],['UBTC',2.009,'B','Derivative - Centralized Custody'],['mF-ONE',1.921,'A-','Tokenized Assets - Credit'],['BTCB',.768,'B','Derivative - Centralized Custody'],['GACLO-1',.768,'B+','Tokenized Assets - Credit'],['bsdETH',.621,'B+','Derivative - Index'],['USDS',.48,'A-','Stablecoin - Alternative Assets'],['LBTC',.477,null,null],['ETH+',.461,'A-','Derivative - Index'],['USDT',.403,'A-','Stablecoin - RWA Backed'],['JAAA',.325,'A+','Tokenized Assets - Credit'],['pufETH',.294,'A','Derivative - Liquid Restaking'],['USD1',.276,'A','Stablecoin - RWA Backed'],['tBTC',.265,'A','Derivative - Wrapped'],['STAC',.251,'A+','Tokenized Assets - Fund'],['rETH',.237,'A-','Derivative - Liquid Staking'],['JTRSY',.213,'A+','Tokenized Assets - Fund'],['BUIDL-I',.166,'A+','Tokenized Assets - Fund'],['weETH',.091,'A+','Derivative - Liquid Restaking'],['stETH',.079,'A+','Derivative - Liquid Staking'],['PYUSD',.063,'A+','Stablecoin - RWA Backed'],['RLUSD',.049,'A+','Stablecoin - RWA Backed'],['USDC',.037,'A+','Stablecoin - RWA Backed'],['cbBTC',.035,'A+','Derivative - Centralized Custody']].map(([a,pd,cr,ty])=>({a,pd,cr,ty}));
+let NOALL=0.4652;
+let RISK=[['USDF',15.803,'C-','Stablecoin - Active Strategy'],['avETH',12.577,'B-','Stablecoin - Active Strategy'],['avUSD',9.709,'B-','Stablecoin - Active Strategy'],['NUSD',7.115,'D','Stablecoin - Active Strategy'],['RUSD',5.509,'C','Stablecoin - Active Strategy'],['iUSD',3.023,'B-','Stablecoin - Active Strategy'],['satUSD+',2.432,'C','Stablecoin - Alternative Assets'],['U',2.331,'B-','Stablecoin - RWA Backed'],['solvBTC',2.274,'B','Derivative - Centralized Custody'],['USDO',2.072,'A-','Stablecoin - RWA Backed'],['UBTC',2.009,'B','Derivative - Centralized Custody'],['mF-ONE',1.921,'A-','Tokenized Assets - Credit'],['BTCB',.768,'B','Derivative - Centralized Custody'],['GACLO-1',.768,'B+','Tokenized Assets - Credit'],['bsdETH',.621,'B+','Derivative - Index'],['USDS',.48,'A-','Stablecoin - Alternative Assets'],['LBTC',.477,null,null],['ETH+',.461,'A-','Derivative - Index'],['USDT',.403,'A-','Stablecoin - RWA Backed'],['JAAA',.325,'A+','Tokenized Assets - Credit'],['pufETH',.294,'A','Derivative - Liquid Restaking'],['USD1',.276,'A','Stablecoin - RWA Backed'],['tBTC',.265,'A','Derivative - Wrapped'],['STAC',.251,'A+','Tokenized Assets - Fund'],['rETH',.237,'A-','Derivative - Liquid Staking'],['JTRSY',.213,'A+','Tokenized Assets - Fund'],['BUIDL-I',.166,'A+','Tokenized Assets - Fund'],['weETH',.091,'A+','Derivative - Liquid Restaking'],['stETH',.079,'A+','Derivative - Liquid Staking'],['PYUSD',.063,'A+','Stablecoin - RWA Backed'],['RLUSD',.049,'A+','Stablecoin - RWA Backed'],['USDC',.037,'A+','Stablecoin - RWA Backed'],['cbBTC',.035,'A+','Derivative - Centralized Custody']].map(([a,pd,cr,ty])=>({a,pd,cr,ty}));
 const tier=pd=>pd<0.5?'good':pd<=3?'warn':'bad';
 const oneIn=pd=>'1 in '+Math.round(100/pd).toLocaleString('en-US');
 const crTag=cr=>!cr?'<span class="tag plain">Not rated</span>':`<span class="tag ${cr[0]==='A'?'good':cr[0]==='B'?'warn':'bad'}">${cr}</span>`;
@@ -659,7 +692,7 @@ function renderRisk(){
   const s=[...sel].map(n=>RISK.find(r=>r.a===n)).filter(Boolean);
   $('#cmpBars').innerHTML=s.length?s.map(r=>`<div class="cmp-item"><div class="top"><span style="font-weight:500">${esc(r.a)}</span><b class="num" style="color:var(--${tier(r.pd)})">${r.pd.toFixed(r.pd<1?2:1)}%</b></div><div class="cmp-track"><i style="width:${Math.max(2,Math.min(100,r.pd/16*100))}%;background:var(--${tier(r.pd)})"></i></div><span class="small">${oneIn(r.pd)} chance of default within a year · Credora ${r.cr||'not rated'}</span></div>`).join(''):'<p class="sub">Tick up to three assets in the table to compare them here.</p>';
   const sorted=[...RISK].sort((a,b)=>a.pd-b.pd),lo=sorted[0],hi=sorted.at(-1),med=sorted[16];
-  $('#riskSummary').innerHTML=`<div class="card card-pad"><span class="small">Lowest priced risk</span><b class="pd num" style="font-size:22px;color:var(--good)">${lo.pd.toFixed(3)}%</b><span class="sub">${lo.a} · ${oneIn(lo.pd)}</span></div><div class="card card-pad"><span class="small">Median of 33 assets</span><b class="pd num" style="font-size:22px;color:var(--warn)">${med.pd.toFixed(2)}%</b><span class="sub">${med.a}</span></div><div class="card card-pad"><span class="small">Highest priced risk</span><b class="pd num" style="font-size:22px;color:var(--bad)">${hi.pd.toFixed(1)}%</b><span class="sub">${hi.a} · ${oneIn(hi.pd)}</span></div><div class="card card-pad"><span class="small">Chance none of the 33 default</span><b class="pd num" style="font-size:22px">46.5%</b><span class="sub">The market's “No to All” outcome</span></div>`;drawRiskDots()}
+  $('#riskSummary').innerHTML=`<div class="card card-pad"><span class="small">Lowest priced risk</span><b class="pd num" style="font-size:22px;color:var(--good)">${lo.pd.toFixed(3)}%</b><span class="sub">${lo.a} · ${oneIn(lo.pd)}</span></div><div class="card card-pad"><span class="small">Median of 33 assets</span><b class="pd num" style="font-size:22px;color:var(--warn)">${med.pd.toFixed(2)}%</b><span class="sub">${med.a}</span></div><div class="card card-pad"><span class="small">Highest priced risk</span><b class="pd num" style="font-size:22px;color:var(--bad)">${hi.pd.toFixed(1)}%</b><span class="sub">${hi.a} · ${oneIn(hi.pd)}</span></div><div class="card card-pad"><span class="small">Chance none of the 33 default</span><b class="pd num" style="font-size:22px">${(NOALL*100).toFixed(1)}%</b><span class="sub">The market's “No to All” outcome</span></div>`;drawRiskDots()}
 
 const LMIN=Math.log10(0.02),LMAX=Math.log10(20);const logW=pd=>Math.max(3,(Math.log10(pd)-LMIN)/(LMAX-LMIN)*100).toFixed(1);
 const GRADES=['A+','A','A-','B+','B','B-','C','C-','D','Not rated'];
@@ -685,11 +718,51 @@ const BRIEF={
 const SRC={app:'markets-search',deep:'deep.seer.pm',futarchy:'futarchy candles',opportunity:'market-chart',risk:'risk.seer.pm'};
 Object.entries(BRIEF).forEach(([v,[a,p,u]])=>{const sec=document.getElementById('v-'+v),head=sec.querySelector('.pagehead');
   head.insertAdjacentHTML('afterend',`<div class="brief" aria-label="What this app is for"><div><span>Who asks</span><p>${a}</p></div><div><span>What is priced</span><p>${p}</p></div><div><span>How it is used</span><p>${u}</p></div></div>`);
-  const eb=head.querySelector('.eyebrow');eb.outerHTML=`<div class="eyerow">${eb.outerHTML}<span class="src ${v==='risk'?'stale':''}" title="Snapshot from Seer's API: ${SRC[v]}"><i></i>Real Seer data · 23 Oct, 07:56 UTC</span></div>`});
+  const eb=head.querySelector('.eyebrow');eb.outerHTML=`<div class="eyerow">${eb.outerHTML}<span class="src ${v==='risk'?'stale':''}" id="chip-${v}" title="Snapshot from Seer's API: ${SRC[v]}"><i></i>Real Seer data · snapshot 23 Oct, 07:56 UTC</span></div>`});
+
+
+/* ---------- live refresh: Seer's public APIs (CORS *), snapshot stays as fallback ---------- */
+const CHAINS={1:'Ethereum',10:'Optimism',100:'Gnosis',8453:'Base'};
+function chip(v,txt,live){const c=document.getElementById('chip-'+v);if(!c)return;c.lastChild.textContent=txt;c.classList.toggle('stale',!live&&v==='risk');c.title=live?'Fetched live from Seer\'s API on page load':'Snapshot from Seer\'s API'}
+const hhmm=()=>new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+async function getJSON(url,body){const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),8000);try{const r=await fetch(url,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal}:{signal:ctl.signal});if(!r.ok)throw new Error(r.status);return await r.json()}finally{clearTimeout(t)}}
+const ZERO=/^0x0+$/;
+function mapMarket(x){
+  const outs=(x.outcomes||[]).map(o=>String(o).trim()),odds=x.odds||[],cond=x.parentMarket&&!ZERO.test(x.parentMarket.id||'0x0');
+  const tpl=String(x.templateId),lo=Number(x.lowerBound||0),hi=Number(x.upperBound||0);let m={q:(x.marketName||'').replace(/\s+/g,' ').trim(),addr:x.id,chain:CHAINS[x.chainId]||('Chain '+x.chainId),liq:+x.liquidityUSD||0,vol:+x.volumeUSD||0,res:new Date((x.openingTs||0)*1000).toISOString().slice(0,10),st:(x.openingTs||0)*1000>Date.now()?'not_open':'open'};
+  if(tpl==='1'||hi>lo){const sc=hi>1e15?1e18:1;const L=lo/sc,H=hi/sc,up=(Number(odds[1])||0)/100;Object.assign(m,{t:cond?'conditional':'scalar',sub:cond?'scalar':undefined,range:[+L.toPrecision(4),+H.toPrecision(4)],up,est:+(L+up*(H-L)).toPrecision(4),unit:''});}
+  else{const px={};outs.forEach((o,i)=>{if(/^invalid/i.test(o)||odds[i]==null)return;px[o]=Number(odds[i])/100});const keys=Object.keys(px);
+    const bin=keys.length===2&&keys.includes('Yes')&&keys.includes('No');const top=Object.fromEntries(Object.entries(px).sort((a,b)=>b[1]-a[1]).slice(0,bin?2:3));
+    Object.assign(m,{t:cond?'conditional':bin?'binary':'categorical',sub:cond?(bin?'binary':'categorical'):undefined,px:top});}
+  if(cond)m.parent='Conditional on parent market '+short(x.parentMarket.id);
+  return m}
+async function liveMarkets(){const d=await getJSON('https://app.seer.pm/.netlify/functions/markets-search',{limit:12,page:1,marketStatusList:['open'],orderBy:'liquidityUSD',orderDirection:'desc'});
+  const list=(d.markets||[]).filter(x=>x&&x.id&&x.marketName).map(mapMarket).filter(m=>m.px?Object.keys(m.px).length:m.range);if(list.length<4)throw new Error('few');
+  const fut=MKTS.find(m=>m.link==='#futarchy');MKTS=fut?list.concat([fut]):list;
+  const chains=[...new Set(MKTS.map(m=>m.chain))];$('#chainSeg').innerHTML='<button aria-pressed="true" data-chain="all">All chains</button>'+chains.map(c=>`<button aria-pressed="false" data-chain="${esc(c)}">${esc(c)}</button>`).join('');fChain='all';
+  $('#liqFeed').innerHTML=[...MKTS].filter(m=>m.liq).sort((a,b)=>b.liq-a.liq).slice(0,5).map(m=>`<div class="feed-row"><span class="mkt-ico" style="width:28px;height:28px;font-size:10px;background:${TCOL[m.t]}" aria-hidden="true">${TICO[m.t]}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sq(m.q))}<br><span class="addr">${short(m.addr)}</span></span><span class="r num">${usd(m.liq)}</span></div>`).join('');
+  $('#resFeed').innerHTML=[...MKTS].filter(m=>m.st==='not_open').sort((a,b)=>a.res.localeCompare(b.res)).slice(0,5).map(m=>`<div class="feed-row"><span class="tag good">Trading</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sq(m.q))}</span><span class="r small">${nice(m.res)}</span></div>`).join('')||'<p class="small">Every market shown is already taking answers.</p>';
+  chip('app','Live · Seer API · '+(d.count?d.count.toLocaleString('en-US')+' open markets · ':'')+'fetched '+hhmm(),true)}
+async function liveRisk(){const d=await getJSON('https://risk.seer.pm/api/v1/risk-pricing');const byName=new Map((d.assets||[]).map(a=>[a.name,a]));let n=0;
+  RISK=RISK.map(r=>{const a=byName.get(r.a);if(a&&isFinite(a.pdYearly)){n++;return {...r,pd:a.pdYearly*100}}return r});if(n<20)throw new Error('mismatch');
+  if(d.noToAll&&isFinite(d.noToAll.probability))NOALL=d.noToAll.probability;
+  const upd=d.updatedAt?new Date(d.updatedAt*1000).toLocaleDateString('en-GB',{day:'numeric',month:'short'}):null;if(upd)$('#riskUpd').textContent=upd;
+  chip('risk','Live · risk.seer.pm · prices from '+(upd||'?'),false)}
+async function liveFut(){const q='query D($pool:String!){candles(first:40,where:{pool:$pool,period:86400},orderBy:periodStartUnix,orderDirection:desc){periodStartUnix close}}';const url='https://api.futarchy.seer.pm/candles/graphql?chainId=1';
+  const [y,n]=await Promise.all(['0xa95d30c125c20d001f6aed9f2eff1b8e5577dca3','0x7a3b5f6592186c5d121ec4e48fc9e5d020a0b2df'].map(p=>getJSON(url,{query:q,variables:{pool:p}})));
+  const nm=new Map(n.data.candles.map(c=>[c.periodStartUnix,Number(c.close)]));const rows=y.data.candles.filter(c=>nm.has(c.periodStartUnix)).map(c=>{const d=new Date(Number(c.periodStartUnix)*1000).toISOString().slice(5,10);return [d,Number(c.close),nm.get(c.periodStartUnix)]}).reverse().slice(-16);
+  if(rows.length<5)throw new Error('few');FH=rows;const [,py,pn]=rows.at(-1),g=(py-pn)/pn*100;
+  const money=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});$('#fYes').textContent=money(py);$('#fNo').textContent=money(pn);
+  const inside=Math.abs(g)<1;$('#fGapTxt').innerHTML=`Gap: <b class="num">${g>=0?'+':'−'}${Math.abs(g).toFixed(4)}%</b>, ${inside?'inside the ±1% band. Markets see no effect on ETH either way.':g>0?'above +1%: markets expect ETH higher if scheduled.':'below −1%: markets expect ETH lower if scheduled.'}`;$('#fGapTag').textContent=inside?'Neutral':g>0?'Include':'Exclude';
+  if(Date.now()>Date.UTC(2026,9,24))$('#fCloseLbl').textContent='00:00 UTC · closed, awaiting resolution';
+  chip('futarchy','Live · futarchy candles · fetched '+hhmm(),true)}
+function goLive(){const jobs=[['app',liveMarkets],['risk',liveRisk],['futarchy',liveFut]];
+  Promise.allSettled(jobs.map(([,f])=>f())).then(rs=>{rs.forEach((r,i)=>{if(r.status==='rejected')console.info('[seer] live '+jobs[i][0]+' unavailable, showing snapshot:',r.reason&&r.reason.message)});redraw()})}
 
 function redraw(){renderMkts();renderDeep();drawHist();drawFut();renderOpp();renderRisk()}
 matchMedia('(prefers-color-scheme: light)').addEventListener('change',redraw);
 route();
+goLive();
 })();
 </script>
 

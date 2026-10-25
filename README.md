@@ -11,4 +11,4 @@ Entry for poidh bounty 38, "Design Seer's six interfaces", by [@safwaan_uddin](h
 | Opportunity Markets | `opportunity.html` |
 | Risk Pricing | `risk.html` |
 
-All six share one shell and header, run in dark and light mode, and use real Seer data captured from Seer's own APIs on 23 Oct 2026, 07:56 UTC. Trade buttons open a demo ticket; nothing is sent onchain.
+All six share one shell and header, run in dark and light mode, and use real Seer data. The Seer app, Risk Pricing and Futarchy pages fetch Seer's public APIs live on page load, falling back to a 23 Oct 2026 07:56 UTC snapshot; Deep and Opportunity use that snapshot (their APIs don't allow browser access). Each page's badge says whether it is live or a snapshot. Trade buttons open a demo ticket; nothing is sent onchain.
