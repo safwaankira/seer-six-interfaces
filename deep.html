@@ -213,11 +213,12 @@ tbody tr:hover td{background:var(--nest)}
 .chart svg{width:100%;height:auto;display:block}
 .chart text{fill:var(--muted);font:11px var(--f-body)}
 .prop-list{display:grid;gap:8px}
-.brief{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--card);border-radius:12px}
+.brief{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--card);border-radius:12px}
 .brief>div{padding:14px 18px;display:grid;gap:4px;align-content:start}
 .brief>div+div{border-left:1px solid var(--line)}
 .brief span{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .brief p{color:var(--text)}
+@media (max-width:1000px){.brief{grid-template-columns:1fr 1fr}.brief>div:nth-child(3){border-left:0}.brief>div:nth-child(n+3){border-top:1px solid var(--line)}}
 @media (max-width:760px){.brief{grid-template-columns:1fr}.brief>div+div{border-left:0;border-top:1px solid var(--line)}}
 .eyerow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .export{margin:0;background:var(--nest);border-radius:8px;padding:14px;overflow:auto;max-height:320px;font:12px/1.55 var(--f-mono);color:var(--text-2)}
@@ -710,14 +711,14 @@ segBind('#riskCat','c',v=>{rCat=v;renderRisk()});
 
 /* who asks / what's priced / how it's used + data chip, per app */
 const BRIEF={
- app:['Anyone checking whether their question already has a market.','Every outcome on Seer, across all market types and chains.','Find the market, read it, trade it, or open it in the app built for it.'],
- deep:['Funders deciding which of 98 Ethereum repos deserve weight.','The originality score a human jury will give each repo.','See where the market expects each repo to land before the jury reports.'],
- futarchy:['Ethereum core devs and anyone following the EIP-8363 call.','ETH’s price if the EIP is scheduled for Hegotá, and if it isn’t.','Read the gap between the branches. Core devs still decide.'],
- opportunity:['The Seer team, before it names the AI job board.','Each proposed name’s chance of being adopted.','A second signal for the team. The team still chooses.'],
- risk:['Anyone sizing their exposure to a DeFi asset.','Each asset’s yearly probability of default.','Compare assets side by side, and against their Credora ratings.']};
+ app:['Anyone checking whether their question already has a market.','Every outcome on Seer, across all market types and chains.','Find the market, read it, or open it in the app built for it.','Traders find mispriced outcomes and liquidity incentives across every chain in one place.'],
+ deep:['Funders deciding which of 98 Ethereum repos deserve weight.','The originality score a human jury will give each repo.','See where the market expects each repo to land before the jury reports.','Traders and AI agents are paid for being closer to the jury than the market, across 98 outcomes at once.'],
+ futarchy:['Ethereum core devs and anyone following the EIP-8363 call.','ETH’s price if the EIP is scheduled for Hegotá, and if it isn’t.','Read the gap between the branches. Core devs still decide.','Traders back the branch they believe in; trades on the branch that doesn’t happen are refunded.'],
+ opportunity:['The Seer team, before it names the AI job board.','Each proposed name’s chance of being adopted.','A second signal for the team. The team still chooses.','Traders profit by spotting the pick early; with no name above 7%, the field is wide open.'],
+ risk:['Anyone sizing their exposure to a DeFi asset.','Each asset’s yearly probability of default.','Compare assets side by side, and against their Credora ratings.','Traders who see risk differently set their own estimate; one stake backs estimates on all 33 assets.']};
 const SRC={app:'markets-search',deep:'deep.seer.pm',futarchy:'futarchy candles',opportunity:'market-chart',risk:'risk.seer.pm'};
-Object.entries(BRIEF).forEach(([v,[a,p,u]])=>{const sec=document.getElementById('v-'+v),head=sec.querySelector('.pagehead');
-  head.insertAdjacentHTML('afterend',`<div class="brief" aria-label="What this app is for"><div><span>Who asks</span><p>${a}</p></div><div><span>What is priced</span><p>${p}</p></div><div><span>How it is used</span><p>${u}</p></div></div>`);
+Object.entries(BRIEF).forEach(([v,[a,p,u,w]])=>{const sec=document.getElementById('v-'+v),head=sec.querySelector('.pagehead');
+  head.insertAdjacentHTML('afterend',`<div class="brief" aria-label="What this app is for"><div><span>Who asks</span><p>${a}</p></div><div><span>What is priced</span><p>${p}</p></div><div><span>How it is used</span><p>${u}</p></div><div><span>Why traders show up</span><p>${w}</p></div></div>`);
   const eb=head.querySelector('.eyebrow');eb.outerHTML=`<div class="eyerow">${eb.outerHTML}<span class="src ${v==='risk'?'stale':''}" id="chip-${v}" title="Snapshot from Seer's API: ${SRC[v]}"><i></i>Real Seer data · snapshot 23 Oct, 07:56 UTC</span></div>`});
 
 
