@@ -219,7 +219,7 @@ tbody tr:hover td{background:var(--nest)}
 .brief span{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .brief p{color:var(--text)}
 @media (max-width:1000px){.brief{grid-template-columns:1fr 1fr}.brief>div:nth-child(3){border-left:0}.brief>div:nth-child(n+3){border-top:1px solid var(--line)}}
-@media (max-width:760px){.brief{grid-template-columns:1fr}.brief>div+div{border-left:0;border-top:1px solid var(--line)}}
+@media (max-width:760px){.brief{grid-template-columns:1fr 1fr}.brief>div{padding:10px 12px}.brief p{font-size:12.5px;line-height:1.4}.brief>div:nth-child(2n){border-left:1px solid var(--line)}.brief>div:nth-child(n+3){border-top:1px solid var(--line)}}
 .eyerow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .export{margin:0;background:var(--nest);border-radius:8px;padding:14px;overflow:auto;max-height:320px;font:12px/1.55 var(--f-mono);color:var(--text-2)}
 .tok-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:6px}
@@ -415,15 +415,15 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
     <div class="card card-pad" style="gap:12px">
       <div class="filters" style="justify-content:space-between">
         <div class="seg" id="deepSort" role="group" aria-label="Sort"><button aria-pressed="true" data-s="score">Highest expected score</button><button aria-pressed="false" data-s="name">A–Z</button></div>
-        <span class="small">Top 20 of 98 shown</span>
+        <span class="small" id="deepCount">Top 20 of 98 shown</span>
       </div>
       <div class="deep-row" style="background:none;padding-block:0;font-size:12px;color:var(--muted)"><span>#</span><span>Repository</span><span class="hide-sm">Expected originality</span><span class="r">Score</span><span class="r hide-sm">UP</span></div>
       <div class="grid" style="gap:6px" id="deepList"></div>
-      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><a class="pill-btn btn-sec" href="https://deep.seer.pm/" target="_blank" rel="noopener" style="text-decoration:none">All 98 on deep.seer.pm</a><button class="pill-btn btn-ghost" id="deepExportBtn" aria-expanded="false" style="background:var(--nest)">Show agent export</button></div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="pill-btn btn-sec" id="deepMore" hidden>Show all</button><a class="pill-btn btn-ghost" style="background:var(--nest);text-decoration:none" href="https://deep.seer.pm/" target="_blank" rel="noopener">Open deep.seer.pm</a><button class="pill-btn btn-ghost" id="deepExportBtn" aria-expanded="false" style="background:var(--nest)">Show agent export</button></div>
       <pre class="export" id="deepExport" hidden></pre>
     </div>
     <aside class="side">
-      <div class="card card-pad"><h3>Where the top 20 sit</h3><div class="chart" id="deepHist"></div><p class="small">Expected originality score, 0–100 scale zoomed to 76–90</p></div>
+      <div class="card card-pad"><h3 id="histTitle">Where the top 20 sit</h3><div class="chart" id="deepHist"></div><p class="small" id="histNote">Expected originality score, 0–100 scale zoomed to 76–90</p></div>
       <div class="card card-pad" style="gap:10px"><h3>How this round settles</h3>
         <div class="row"><span class="grow">Question</span><span class="small">Avg jury originality, 0–100</span></div>
         <div class="row"><span class="grow">Markets</span><span class="small">98 scalar, in bundles A/B/C</span></div>
@@ -439,7 +439,7 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
 <section class="view" id="v-futarchy" data-view="futarchy" hidden>
   <div class="pagehead">
     <div class="titles"><span class="eyebrow">Futarchy · Ethereum</span><h2>EIP-8363: Tapered Issuance Burn, scheduled for Hegotá?</h2><p class="sub">Success measure: WETH price in USDS, 5-day TWAP. Include if the pass branch beats fail by more than 1%, exclude if fail wins by more than 1%, otherwise neutral.</p></div>
-    <div class="statline"><div class="stat"><b class="num">30%</b><span>Chance it's scheduled</span></div><div class="stat"><b class="num">~1.52M</b><span>USDS volume per side</span></div><div class="stat"><b>24 Oct</b><span id="fCloseLbl">00:00 UTC close</span></div></div>
+    <div class="statline"><div class="stat"><b>Closed</b><span>Awaiting Reality.eth answer</span></div><div class="stat"><b class="num">~1.52M</b><span>USDS volume per side</span></div><div class="stat"><b>24 Oct</b><span id="fCloseLbl">Trading closed, 00:00 UTC</span></div></div>
   </div>
   <div class="split">
     <div class="grid" style="gap:16px">
@@ -475,7 +475,7 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
 <section class="view" id="v-opportunity" data-view="opportunity" hidden>
   <div class="pagehead">
     <div class="titles"><span class="eyebrow">Opportunity Market · Seer</span><h2>What name will the futarchy-run AI job board adopt?</h2><p class="sub">234 proposed names across three linked levels. Each level holds 78 names plus “Other”, which rolls into the next level. Prices are the market's estimate that the team picks that name.</p></div>
-    <div class="statline"><div class="stat"><b class="num">234</b><span>Names</span></div><div class="stat"><b class="num">$1,062</b><span>Liquidity</span></div><div class="stat"><b class="num">$5,090</b><span>Volume</span></div></div>
+    <div class="statline"><div class="stat"><b class="num">234</b><span>Names</span></div><div class="stat"><b class="num" id="oppLiq">$1,062</b><span>Liquidity</span></div><div class="stat"><b class="num">$5,090</b><span>Volume</span></div></div>
   </div>
   <div class="split">
     <div class="grid" style="gap:8px" id="oppList"></div>
@@ -519,7 +519,7 @@ tr.sel td{background:color-mix(in srgb,var(--primary) 9%,transparent)}
 
 <footer class="sitefoot" style="display:grid;gap:12px">
   <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:space-between"><span>Seer · information finance on Conditional Tokens, Reality.eth and Kleros</span><span>Redesign concept on the Electric Foundation kit</span></div>
-  <div class="sources"><span>Live on page load where Seer's API allows browsers (Seer app, Risk Pricing, Futarchy); Deep and Opportunity use a 23 Oct 2026 07:56 UTC snapshot. Each page's badge says which. Endpoints:</span><span>risk.seer.pm/api/v1/risk-pricing · risk.seer.pm/api/credora</span><span>app.seer.pm/.netlify/functions/markets-search · market-chart</span><span>api.futarchy.seer.pm/registry/graphql · candles/graphql</span><span>deep.seer.pm originality round 3 markets data</span></div>
+  <div class="sources"><span>Every app fetches Seer's public APIs live on page load and falls back to a 23 Oct 2026 07:56 UTC snapshot if they can't be reached. Each page's badge says which. Endpoints:</span><span>risk.seer.pm/api/v1/risk-pricing · risk.seer.pm/api/credora</span><span>app.seer.pm/.netlify/functions/markets-search · market-chart</span><span>api.futarchy.seer.pm/registry/graphql · candles/graphql</span><span>app.seer.pm/.netlify/functions/get-market · app.seer.pm/subgraph (uniswap, Optimism)</span></div>
 </footer>
 </main>
 
@@ -646,24 +646,29 @@ function tip(rows,x,y){tipEl.replaceChildren();rows.forEach(([v,k,col])=>{const 
 function untip(){tipEl.hidden=true}
 
 /* deep: Round 3 originality, top 20 of 98 */
-const DEEP=[['supranational/blst',.887],['status-im/nimbus-eth2',.8768],['herumi/mcl',.8763],['flashbots/mev-boost',.8701],['ethereum/py_ecc',.8499],['ethereum/consensus-specs',.8334],['libp2p/libp2p',.8324],['sigp/lighthouse',.8261],['ethers-io/ethers.js',.823],['openzeppelin/openzeppelin-contracts',.8203],['ethereum/eips',.7979],['consensys/teku',.7976],['arkworks-rs/algebra',.7954],['Consensys/gnark-crypto',.7948],['ethereum/go-ethereum',.7941],['chainsafe/lodestar',.7902],['nethereum/nethereum',.7892],['argotorg/solidity',.7812],['skalenetwork/libBLS',.7803],['Vectorized/solady',.7734]].map(([repo,up],i)=>({repo,up,score:up*100,rank:i+1}));
-let deepSort='score';
-function renderDeep(){const arr=[...DEEP].sort((a,b)=>deepSort==='score'?b.up-a.up:a.repo.toLowerCase().localeCompare(b.repo.toLowerCase()));
-  $('#deepList').innerHTML=arr.map(d=>{const [org,name]=d.repo.split('/');return `<div class="deep-row"><span class="rank">${String(d.rank).padStart(2,'0')}</span><span style="min-width:0" class="repo"><div class="ttl"><a href="https://github.com/${esc(d.repo)}" target="_blank" rel="noopener">${esc(name)}</a></div><div class="who">${esc(org)}</div></span><span class="hide-sm"><div class="bar"><i style="width:${d.score}%"></i></div></span><b class="r num">${d.score.toFixed(1)}</b><span class="r num hide-sm small">${d.up.toFixed(3)}</span></div>`}).join('')}
+let DEEP=[['supranational/blst',.887],['status-im/nimbus-eth2',.8768],['herumi/mcl',.8763],['flashbots/mev-boost',.8701],['ethereum/py_ecc',.8499],['ethereum/consensus-specs',.8334],['libp2p/libp2p',.8324],['sigp/lighthouse',.8261],['ethers-io/ethers.js',.823],['openzeppelin/openzeppelin-contracts',.8203],['ethereum/eips',.7979],['consensys/teku',.7976],['arkworks-rs/algebra',.7954],['Consensys/gnark-crypto',.7948],['ethereum/go-ethereum',.7941],['chainsafe/lodestar',.7902],['nethereum/nethereum',.7892],['argotorg/solidity',.7812],['skalenetwork/libBLS',.7803],['Vectorized/solady',.7734]].map(([repo,up],i)=>({repo,up,score:up*100,rank:i+1}));
+let deepSort='score',deepAll=false;
+$('#deepMore').onclick=()=>{deepAll=!deepAll;renderDeep()};
+function renderDeep(){const arr=[...DEEP].sort((a,b)=>deepSort==='score'?b.up-a.up:a.repo.toLowerCase().localeCompare(b.repo.toLowerCase()));const shown=deepAll?arr:arr.slice(0,20);
+  $('#deepCount').textContent=DEEP.length>20?`Showing ${shown.length} of ${DEEP.length}`:'Top 20 of 98 shown';const mb=$('#deepMore');mb.hidden=DEEP.length<=20;mb.textContent=deepAll?'Show top 20':`Show all ${DEEP.length}`;
+  $('#deepList').innerHTML=shown.map(d=>{const [org,name]=d.repo.split('/');return `<div class="deep-row"><span class="rank">${String(d.rank).padStart(2,'0')}</span><span style="min-width:0" class="repo"><div class="ttl"><a href="https://github.com/${esc(d.repo)}" target="_blank" rel="noopener">${esc(name)}</a></div><div class="who">${esc(org)}</div></span><span class="hide-sm"><div class="bar"><i style="width:${d.score}%"></i></div></span><b class="r num">${d.score.toFixed(1)}</b><span class="r num hide-sm small">${d.up.toFixed(3)}</span></div>`}).join('')}
 segBind('#deepSort','s',v=>{deepSort=v;renderDeep()});
-function drawHist(){const lo=76,bins=Array(7).fill(0).map(()=>[]);DEEP.forEach(d=>bins[Math.min(6,Math.floor((d.score-lo)/2))].push(d));const W=300,H=140,pb=22,pt=16,max=Math.max(...bins.map(b=>b.length)),slot=W/7,bw=Math.min(24,slot-8);
-  const bar=(x,y,w,h)=>h<=0?'':`M${x},${y+h}V${y+4}Q${x},${y} ${x+4},${y}H${x+w-4}Q${x+w},${y} ${x+w},${y+4}V${y+h}Z`;
-  $('#deepHist').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="How many of the top 20 repos fall in each 2-point band of expected originality score">${[0,1,2,3,4,5,6].map(i=>{const v=bins[i].length,h=(H-pb-pt)*v/max,x=i*slot+(slot-bw)/2,y=H-pb-h;return `<g class="hb" data-i="${i}" tabindex="${v?0:-1}"><rect x="${i*slot}" y="${pt-6}" width="${slot}" height="${H-pb-pt+6}" fill="transparent"/><path d="${bar(x,y,bw,h)}" fill="${css('--primary')}"/>${v?`<text x="${x+bw/2}" y="${y-5}" text-anchor="middle">${v}</text>`:''}</g>`}).join('')}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="${css('--line')}"/>${[76,80,84,88].map(v=>`<text x="${(v-lo)/2*slot}" y="${H-6}" text-anchor="${v===76?'start':'middle'}">${v}</text>`).join('')}</svg>`;
-  $$('#deepHist .hb').forEach(g=>{const b=bins[+g.dataset.i],lab=(76+2*g.dataset.i)+'–'+(78+2*g.dataset.i);const show=e=>{if(!b.length)return;const r=g.getBoundingClientRect();tip([[b.length+(b.length>1?' repos':' repo')],[b.map(d=>d.repo.split('/')[1]).join(', '),'Score '+lab+':']],e.clientX||r.left+r.width/2,e.clientY||r.top)};g.onpointermove=show;g.onfocus=show;g.onpointerleave=untip;g.onblur=untip})}
+function drawHist(){const sc=DEEP.map(d=>d.score),bw0=DEEP.length>20?4:2,lo=Math.floor(Math.min(...sc)/bw0)*bw0,hi=Math.ceil((Math.max(...sc)+0.001)/bw0)*bw0,nb=Math.max(1,(hi-lo)/bw0),bins=Array(nb).fill(0).map(()=>[]);DEEP.forEach(d=>bins[Math.min(nb-1,Math.floor((d.score-lo)/bw0))].push(d));
+  $('#histTitle').textContent=DEEP.length>20?`Where all ${DEEP.length} repos sit`:'Where the top 20 sit';$('#histNote').textContent=`Expected originality score, 0–100 scale zoomed to ${lo}–${hi}`;
+  const W=300,H=140,pb=22,pt=16,max=Math.max(...bins.map(b=>b.length)),slot=W/nb,bw=Math.min(24,slot-4);
+  const bar=(x,y,w,h)=>h<=0?'':`M${x},${y+h}V${y+Math.min(4,h)}Q${x},${y} ${x+Math.min(4,w/2)},${y}H${x+w-Math.min(4,w/2)}Q${x+w},${y} ${x+w},${y+Math.min(4,h)}V${y+h}Z`;
+  const ticks=[];for(let v=lo;v<=hi;v+=bw0*(nb>8?2:1))ticks.push(v);
+  $('#deepHist').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="How many repos fall in each ${bw0}-point band of expected originality score">${bins.map((b,i)=>{const v=b.length,h=(H-pb-pt)*v/max,x=i*slot+(slot-bw)/2,y=H-pb-h;return `<g class="hb" data-i="${i}" tabindex="${v?0:-1}"><rect x="${i*slot}" y="${pt-6}" width="${slot}" height="${H-pb-pt+6}" fill="transparent"/><path d="${bar(x,y,bw,h)}" fill="${css('--primary')}"/>${v?`<text x="${x+bw/2}" y="${y-5}" text-anchor="middle">${v}</text>`:''}</g>`}).join('')}<line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="${css('--line')}"/>${ticks.map(v=>`<text x="${Math.min(W-8,(v-lo)/bw0*slot)}" y="${H-6}" text-anchor="${v===lo?'start':'middle'}">${v}</text>`).join('')}</svg>`;
+  $$('#deepHist .hb').forEach(g=>{const i=+g.dataset.i,b=bins[i],lab=(lo+bw0*i)+'–'+(lo+bw0*(i+1));const show=e=>{if(!b.length)return;const r=g.getBoundingClientRect();const names=b.slice().sort((x,y)=>y.score-x.score).map(d=>d.repo.split('/')[1]);tip([[b.length+(b.length>1?' repos':' repo')],[names.slice(0,8).join(', ')+(names.length>8?` +${names.length-8} more`:''),'Score '+lab+':']],e.clientX||r.left+r.width/2,e.clientY||r.top)};g.onpointermove=show;g.onfocus=show;g.onpointerleave=untip;g.onblur=untip})}
 $('#deepExportBtn').onclick=()=>{const p=$('#deepExport'),open=p.hidden;p.hidden=!open;$('#deepExportBtn').setAttribute('aria-expanded',open);$('#deepExportBtn').textContent=open?'Hide agent export':'Show agent export';
-  if(open)p.textContent=JSON.stringify({market:'Deep Funding Round 3 - Originality',chain:'optimism',collateral:'sUSDS',parent:'0x37ab5cbeee3a32289430e5d38b914ec7f580fd87',priced:'expected average jury originality score, 0-100 (UP price x 100)',use:'which repos funders read first; the jury still scores',resolution:'Reality.eth, Kleros Court on dispute',snapshot:'2026-10-23T07:56Z',top:DEEP.map(d=>({repo:d.repo,up:d.up,expected_score:+d.score.toFixed(1)}))},null,2)};
+  if(open)p.textContent=JSON.stringify({market:'Deep Funding Round 3 - Originality',chain:'optimism',collateral:'sUSDS',parent:'0x37ab5cbeee3a32289430e5d38b914ec7f580fd87',priced:'expected average jury originality score, 0-100 (UP price x 100)',use:'which repos funders read first; the jury still scores',resolution:'Reality.eth, Kleros Court on dispute',source:(document.getElementById('chip-deep')||{}).textContent,repos:[...DEEP].sort((a,b)=>b.up-a.up).map(d=>({repo:d.repo,up:+d.up.toFixed(4),expected_score:+d.score.toFixed(1)}))},null,2)};
 
 /* futarchy: EIP-8363 daily closes, WETH in USDS */
 let FH=[['10-08',2475.56,2475.43],['10-09',2484.46,2484.33],['10-10',2498.9,2498.74],['10-12',2446.3,2446.22],['10-13',2498.89,2498.73],['10-14',2416.33,2416.31],['10-15',2440.34,2440.28],['10-16',2422.79,2422.76],['10-17',2398.85,2398.86],['10-18',2406.82,2406.81],['10-19',2407.25,2407.24],['10-20',2446.77,2446.7],['10-21',2472.33,2472.23],['10-22',2384.99,2385.02],['10-23',2401.22,2401.23]];
 function drawFut(){const W=640,H=230,l=52,r=86,t=14,b=26,n=FH.length,mn=-1.6,mx=1.6;const G=FH.map(d=>(d[1]-d[2])/d[2]*100);
   const X=i=>l+(W-l-r)*i/(n-1),Y=v=>t+(H-t-b)*(1-(v-mn)/(mx-mn));const line=G.map((g,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(g).toFixed(1)).join('');
   const lab=[0,4,9,14],last=G[n-1],fmt=g=>(g>=0?'+':'−')+Math.abs(g).toFixed(4)+'%';
-  $('#futChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" tabindex="0" aria-label="Gap between the scheduled and not-scheduled WETH price, 8 to 23 October, staying inside the plus or minus 1 percent neutral band. Use arrow keys to step through days."><rect x="${l}" y="${Y(1)}" width="${W-l-r}" height="${Y(-1)-Y(1)}" fill="${css('--sec')}"/>${[-1,0,1].map(v=>`<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css('--line')}"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end">${v>0?'+':v<0?'−':''}${Math.abs(v)}%</text>`).join('')}<text x="${W-r+10}" y="${Y(1.3)+4}">Include</text><text x="${W-r+10}" y="${Y(0)+4}" fill="${css('--sec-text')}" style="fill:var(--sec-text)">Neutral</text><text x="${W-r+10}" y="${Y(-1.3)+4}">Exclude</text>${lab.map((i,k)=>`<text x="${X(i)}" y="${H-6}" text-anchor="${k===0?'start':k===3?'end':'middle'}">${nice('2026-'+FH[i][0]).replace(' 2026','')}</text>`).join('')}<path d="${line}" fill="none" stroke="${css('--primary')}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(n-1)}" cy="${Y(last)}" r="4" fill="${css('--primary')}" stroke="${css('--card')}" stroke-width="2"/><line id="futX" x1="0" x2="0" y1="${t}" y2="${H-b}" stroke="${css('--text-2')}" stroke-width="1" visibility="hidden"/><rect id="futHit" x="${l}" y="${t}" width="${W-l-r}" height="${H-t-b}" fill="transparent"/></svg><p class="small" style="margin-top:6px">Daily closes, 8–23 Oct (no trades on 11 Oct; 23 Oct partial). The gap never left ±0.01%, far inside the band: markets expect no effect on ETH either way. Latest ${fmt(last)}.</p>`;
+  $('#futChart').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" tabindex="0" aria-label="Gap between the scheduled and not-scheduled WETH price, 8 to 23 October, staying inside the plus or minus 1 percent neutral band. Use arrow keys to step through days."><rect x="${l}" y="${Y(1)}" width="${W-l-r}" height="${Y(-1)-Y(1)}" fill="${css('--sec')}"/>${(()=>{const i0=FH.findIndex(d=>d[0]>='10-09'),i1=FH.map(d=>d[0]<='10-14').lastIndexOf(true);return i0>=0&&i1>i0?`<rect x="${X(i0)}" y="${t}" width="${X(i1)-X(i0)}" height="${H-t-b}" fill="${css('--primary')}" opacity=".07"/><text x="${(X(i0)+X(i1))/2}" y="${t+12}" text-anchor="middle">Decision window, 9–14 Oct</text>`:''})()}${[-1,0,1].map(v=>`<line x1="${l}" x2="${W-r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css('--line')}"/><text x="${l-8}" y="${Y(v)+4}" text-anchor="end">${v>0?'+':v<0?'−':''}${Math.abs(v)}%</text>`).join('')}<text x="${W-r+10}" y="${Y(1.3)+4}">Include</text><text x="${W-r+10}" y="${Y(0)+4}" fill="${css('--sec-text')}" style="fill:var(--sec-text)">Neutral</text><text x="${W-r+10}" y="${Y(-1.3)+4}">Exclude</text>${lab.map((i,k)=>`<text x="${X(i)}" y="${H-6}" text-anchor="${k===0?'start':k===3?'end':'middle'}">${nice('2026-'+FH[i][0]).replace(' 2026','')}</text>`).join('')}<path d="${line}" fill="none" stroke="${css('--primary')}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(n-1)}" cy="${Y(last)}" r="4" fill="${css('--primary')}" stroke="${css('--card')}" stroke-width="2"/><line id="futX" x1="0" x2="0" y1="${t}" y2="${H-b}" stroke="${css('--text-2')}" stroke-width="1" visibility="hidden"/><rect id="futHit" x="${l}" y="${t}" width="${W-l-r}" height="${H-t-b}" fill="transparent"/></svg><p class="small" style="margin-top:6px">Daily closes, 8–23 Oct (no trades on 11 Oct; 23 Oct partial). The gap never left ±0.01%, far inside the band: markets expect no effect on ETH either way. Latest ${fmt(last)}.</p>`;
   const svg=$('#futChart svg'),xl=$('#futX');let cur=n-1;
   const at=(i,cx,cy)=>{cur=i;const sx=svg.getBoundingClientRect().width/W;xl.setAttribute('x1',X(i));xl.setAttribute('x2',X(i));xl.setAttribute('visibility','visible');const d=FH[i];tip([[fmt(G[i])],[nice('2026-'+d[0]),'Day'],['$'+d[1].toLocaleString('en-US',{minimumFractionDigits:2}),'If scheduled',css('--primary')],['$'+d[2].toLocaleString('en-US',{minimumFractionDigits:2}),'If not',css('--muted')]],cx??svg.getBoundingClientRect().left+X(i)*sx,cy??svg.getBoundingClientRect().top+Y(G[i])*sx)};
   $('#futHit').onpointermove=e=>{const bx=svg.getBoundingClientRect(),sx=bx.width/W,px=(e.clientX-bx.left)/sx;at(Math.max(0,Math.min(n-1,Math.round((px-l)/(W-l-r)*(n-1)))),e.clientX,e.clientY)};
@@ -674,9 +679,9 @@ const PL=[['GIP-153','Move Gnosis Chain into the Ethereum Economic Zone','GNO $9
 $('#propList').innerHTML=PL.map(p=>`<div class="row" style="padding-block:10px;align-items:flex-start;flex-direction:column;gap:4px"><span class="mono small">${p[0]}</span><span>${p[1]}</span><span style="display:flex;width:100%;justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="small num">${p[2]}</span><span class="tag ${p[4]}">${p[3]}</span></span></div>`).join('')+'<p class="small">Pass vs. fail prices are GNO in sDAI. Onchain resolution not yet confirmed.</p>';
 
 /* opportunity: AI job board, level-1 top 8 */
-const OPP=[['delegateyourjob.ai',.065],['Zetsu.AI',.05],['Workmesh',.043],['Foreguild',.039],['Seek',.028],['Auspex',.024],['AgenticGigs',.022],['Vantage',.022]];
+let OPP=[['delegateyourjob.ai',.065],['Zetsu.AI',.05],['Workmesh',.043],['Foreguild',.039],['Seek',.028],['Auspex',.024],['AgenticGigs',.022],['Vantage',.022]];
 const REB=[['Electric Foundation',.801],['Signal Convergence',.103],['Signal Dark',.029],['Convergent',.01]];
-function renderOpp(){const max=OPP[0][1];$('#oppList').innerHTML=OPP.map(([n,p],i)=>`<div class="card opp" style="padding:14px 16px"><div style="display:grid;gap:6px;min-width:0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="rank">${String(i+1).padStart(2,'0')}</span><b style="overflow:hidden;text-overflow:ellipsis">${esc(n)}</b>${i===0?'<span class="tag">Market favourite</span>':''}</div><div class="bar"><i style="width:${p/max*100}%"></i></div></div><div style="display:grid;gap:6px;justify-items:end"><b class="num" style="font:600 22px var(--f-display)">${pct(p,1)}</b><div style="display:flex;gap:6px"><button class="chip chip-yes" data-trade="${tj({q:'AI job board adopts “'+n+'”?',a:'Picked',b:'Not picked',pa:p,pb:+(1-p).toFixed(3)})}">Picked</button><button class="chip chip-no" data-trade="${tj({q:'AI job board adopts “'+n+'”?',a:'Not picked',b:'Picked',pa:+(1-p).toFixed(3),pb:p})}">Not</button></div></div></div>`).join('')+'<div class="note"><svg width="16" height="16"><use href="#i-info"/></svg><span>No name is above 7%, so the field is wide open. Prices give the team a signal; the team still picks. Showing the top 8 of 78 level-1 names.</span></div>';
+function renderOpp(){const max=OPP[0][1];$('#oppList').innerHTML=OPP.map(([n,p],i)=>`<div class="card opp" style="padding:14px 16px"><div style="display:grid;gap:6px;min-width:0"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="rank">${String(i+1).padStart(2,'0')}</span><b style="overflow:hidden;text-overflow:ellipsis">${esc(n)}</b>${i===0?'<span class="tag">Market favourite</span>':''}</div><div class="bar"><i style="width:${p/max*100}%"></i></div></div><div style="display:grid;gap:6px;justify-items:end"><b class="num" style="font:600 22px var(--f-display)">${pct(p,1)}</b><div style="display:flex;gap:6px"><button class="chip chip-yes" data-trade="${tj({q:'AI job board adopts “'+n+'”?',a:'Picked',b:'Not picked',pa:p,pb:+(1-p).toFixed(3)})}">Picked</button><button class="chip chip-no" data-trade="${tj({q:'AI job board adopts “'+n+'”?',a:'Not picked',b:'Picked',pa:+(1-p).toFixed(3),pb:p})}">Not</button></div></div></div>`).join('')+'<div class="note"><svg width="16" height="16"><use href="#i-info"/></svg><span>No name is above ${Math.ceil(max*100)}%, so the field is wide open. Prices give the team a signal; the team still picks. Showing the top 8 of 78 level-1 names.</span></div>';
   $('#receipt').innerHTML=REB.map(([n,p],i)=>`<div class="row ${i===0?'won':''}"><span class="grow">${esc(n)}</span>${i===0?'<span class="tag good">Chosen</span>':''}<b class="num">${pct(p,1)}</b></div>`).join('')}
 
 /* risk: Q3 2026, 33 assets */
@@ -725,7 +730,7 @@ Object.entries(BRIEF).forEach(([v,[a,p,u,w]])=>{const sec=document.getElementByI
 /* ---------- live refresh: Seer's public APIs (CORS *), snapshot stays as fallback ---------- */
 const CHAINS={1:'Ethereum',10:'Optimism',100:'Gnosis',8453:'Base'};
 function chip(v,txt,live){const c=document.getElementById('chip-'+v);if(!c)return;c.lastChild.textContent=txt;c.classList.toggle('stale',!live&&v==='risk');c.title=live?'Fetched live from Seer\'s API on page load':'Snapshot from Seer\'s API'}
-const hhmm=()=>new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+const hhmm=()=>new Date().toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZoneName:'short'});
 async function getJSON(url,body){const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),8000);try{const r=await fetch(url,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal}:{signal:ctl.signal});if(!r.ok)throw new Error(r.status);return await r.json()}finally{clearTimeout(t)}}
 const ZERO=/^0x0+$/;
 function mapMarket(x){
@@ -735,7 +740,7 @@ function mapMarket(x){
   else{const px={};outs.forEach((o,i)=>{if(/^invalid/i.test(o)||odds[i]==null)return;px[o]=Number(odds[i])/100});const keys=Object.keys(px);
     const bin=keys.length===2&&keys.includes('Yes')&&keys.includes('No');const top=Object.fromEntries(Object.entries(px).sort((a,b)=>b[1]-a[1]).slice(0,bin?2:3));
     Object.assign(m,{t:cond?'conditional':bin?'binary':'categorical',sub:cond?(bin?'binary':'categorical'):undefined,px:top});}
-  if(cond)m.parent='Conditional on parent market '+short(x.parentMarket.id);
+  if(cond)m.parent='If outcome #'+(Number(x.parentOutcome||0)+1)+' of parent market '+short(x.parentMarket.id);
   return m}
 async function liveMarkets(){const d=await getJSON('https://app.seer.pm/.netlify/functions/markets-search',{limit:12,page:1,marketStatusList:['open'],orderBy:'liquidityUSD',orderDirection:'desc'});
   const list=(d.markets||[]).filter(x=>x&&x.id&&x.marketName).map(mapMarket).filter(m=>m.px?Object.keys(m.px).length:m.range);if(list.length<4)throw new Error('few');
@@ -743,7 +748,7 @@ async function liveMarkets(){const d=await getJSON('https://app.seer.pm/.netlify
   const chains=[...new Set(MKTS.map(m=>m.chain))];$('#chainSeg').innerHTML='<button aria-pressed="true" data-chain="all">All chains</button>'+chains.map(c=>`<button aria-pressed="false" data-chain="${esc(c)}">${esc(c)}</button>`).join('');fChain='all';
   $('#liqFeed').innerHTML=[...MKTS].filter(m=>m.liq).sort((a,b)=>b.liq-a.liq).slice(0,5).map(m=>`<div class="feed-row"><span class="mkt-ico" style="width:28px;height:28px;font-size:10px;background:${TCOL[m.t]}" aria-hidden="true">${TICO[m.t]}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sq(m.q))}<br><span class="addr">${short(m.addr)}</span></span><span class="r num">${usd(m.liq)}</span></div>`).join('');
   $('#resFeed').innerHTML=[...MKTS].filter(m=>m.st==='not_open').sort((a,b)=>a.res.localeCompare(b.res)).slice(0,5).map(m=>`<div class="feed-row"><span class="tag good">Trading</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sq(m.q))}</span><span class="r small">${nice(m.res)}</span></div>`).join('')||'<p class="small">Every market shown is already taking answers.</p>';
-  chip('app','Live · Seer API · '+(d.count?d.count.toLocaleString('en-US')+' open markets · ':'')+'fetched '+hhmm(),true)}
+  chip('app','Live · Seer API · '+(d.count?d.count.toLocaleString('en-US')+' open markets, all chains · ':'')+'fetched '+hhmm(),true)}
 async function liveRisk(){const d=await getJSON('https://risk.seer.pm/api/v1/risk-pricing');const byName=new Map((d.assets||[]).map(a=>[a.name,a]));let n=0;
   RISK=RISK.map(r=>{const a=byName.get(r.a);if(a&&isFinite(a.pdYearly)){n++;return {...r,pd:a.pdYearly*100}}return r});if(n<20)throw new Error('mismatch');
   if(d.noToAll&&isFinite(d.noToAll.probability))NOALL=d.noToAll.probability;
@@ -755,9 +760,24 @@ async function liveFut(){const q='query D($pool:String!){candles(first:40,where:
   if(rows.length<5)throw new Error('few');FH=rows;const [,py,pn]=rows.at(-1),g=(py-pn)/pn*100;
   const money=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});$('#fYes').textContent=money(py);$('#fNo').textContent=money(pn);
   const inside=Math.abs(g)<1;$('#fGapTxt').innerHTML=`Gap: <b class="num">${g>=0?'+':'−'}${Math.abs(g).toFixed(4)}%</b>, ${inside?'inside the ±1% band. Markets see no effect on ETH either way.':g>0?'above +1%: markets expect ETH higher if scheduled.':'below −1%: markets expect ETH lower if scheduled.'}`;$('#fGapTag').textContent=inside?'Neutral':g>0?'Include':'Exclude';
-  if(Date.now()>Date.UTC(2026,9,24))$('#fCloseLbl').textContent='00:00 UTC · closed, awaiting resolution';
+  if(Date.now()>Date.UTC(2026,9,24))$('#fCloseLbl').textContent='Trading closed, 00:00 UTC';
   chip('futarchy','Live · futarchy candles · fetched '+hhmm(),true)}
-function goLive(){const jobs=[['app',liveMarkets],['risk',liveRisk],['futarchy',liveFut]];
+
+async function liveOpp(){const d=await getJSON('https://app.seer.pm/.netlify/functions/get-market',{chainId:100,id:'0x8b3c7f3f09f6a85353926d8ee0f12decc1c9a5e8'});
+  const o=(d.outcomes||[]).map((n,i)=>[String(n).trim(),d.odds&&d.odds[i]]).filter(([n,p])=>p!=null&&isFinite(p)&&!/^(other|invalid)/i.test(n));if(o.length<10)throw new Error('few');
+  OPP=o.sort((a,b)=>b[1]-a[1]).slice(0,8).map(([n,p])=>[n,p/100]);if(isFinite(d.liquidityUSD))$('#oppLiq').textContent=usd(d.liquidityUSD);
+  chip('opportunity','Live · Seer API · fetched '+hhmm(),true)}
+async function liveDeep(){const S='https://app.seer.pm/.netlify/functions/markets-search',srch=p=>getJSON(S,{chainsList:['10'],parentMarket:p,limit:100,page:1}).then(r=>r.markets||[]);
+  const bundles=await srch('0x37ab5cbeee3a32289430e5d38b914ec7f580fd87');if(!bundles.length)throw new Error('no bundles');
+  const repos=(await Promise.all(bundles.map(b=>srch(b.id)))).flat().filter(m=>m.wrappedTokens&&m.wrappedTokens.length>=2);if(repos.length<50)throw new Error('few repos');
+  const toks=repos.flatMap(m=>[m.wrappedTokens[0].toLowerCase(),m.wrappedTokens[1].toLowerCase()]);
+  const q='query P($t:[String!]){ a: pools(first:1000, where:{token0_in:$t}){ token0{id} token1Price } b: pools(first:1000, where:{token1_in:$t}){ token1{id} token0Price } }';
+  const r=await getJSON('https://app.seer.pm/subgraph?_subgraph=uniswap&_chainId=10',{query:q,variables:{t:toks}});const px=new Map();
+  (r.data.a||[]).forEach(p=>px.set(p.token0.id.toLowerCase(),Number(p.token1Price)));(r.data.b||[]).forEach(p=>{const k=p.token1.id.toLowerCase();if(!px.has(k))px.set(k,Number(p.token0Price))});
+  const out=repos.map(m=>{const dn=px.get(m.wrappedTokens[0].toLowerCase()),up=px.get(m.wrappedTokens[1].toLowerCase());if(!(up>0)||!(dn>0))return null;const u=up/(up+dn);const mm=/of (\S+?) in Round/i.exec(m.marketName||'');return {repo:mm?mm[1]:(m.marketName||'').slice(0,40),up:u,score:u*100}}).filter(Boolean);
+  if(out.length<50)throw new Error('few prices');out.sort((a,b)=>b.up-a.up).forEach((d,i)=>d.rank=i+1);DEEP=out;
+  chip('deep','Live · Seer API + Uniswap subgraph · '+out.length+' repos · fetched '+hhmm(),true)}
+function goLive(){const jobs=[['app',liveMarkets],['risk',liveRisk],['futarchy',liveFut],['deep',liveDeep],['opportunity',liveOpp]];
   Promise.allSettled(jobs.map(([,f])=>f())).then(rs=>{rs.forEach((r,i)=>{if(r.status==='rejected')console.info('[seer] live '+jobs[i][0]+' unavailable, showing snapshot:',r.reason&&r.reason.message)});redraw()})}
 
 function redraw(){renderMkts();renderDeep();drawHist();drawFut();renderOpp();renderRisk()}
